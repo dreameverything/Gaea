@@ -29,7 +29,7 @@ import com.bj58.spat.gaea.server.contract.log.ILog;
 import com.bj58.spat.gaea.server.contract.log.LogFactory;
 
 /**
- * CheckNode
+ * OperateSignal
  * 
  * @author Service Platform Architecture Team (spat@58.com)
  */
