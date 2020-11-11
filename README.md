@@ -9,3 +9,7 @@ Email:code@58.com
 
 Copyright Beijing 58 Information Technology Co.,Ltd.
 
+Gaea容器（参照《Gaea.pdf》的2.1.2下载Gaea）
+gaea.tar.gz是Linux平台的Gaea容器。
+gaea.zip是Windows平台的Gaea容器。
+
