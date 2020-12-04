@@ -20,15 +20,38 @@
  */
 package com.bj58.spat.gaea.protocol.exception;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+
 /**
  * RemoteException
  * 
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class RemoteException extends Exception {
-	
+
 	private static final long serialVersionUID = -509623868336336659L;
 	private int errCode;
+	private String subErrorCode;
+
+	private String subErrorMsg;
+
+	public String getSubErrorCode() {
+		return subErrorCode;
+	}
+
+	public void setSubErrorCode(String subErrorCode) {
+		this.subErrorCode = subErrorCode;
+	}
+
+	public String getSubErrorMsg() {
+		return subErrorMsg;
+	}
+
+	public void setSubErrorMsg(String subErrorMsg) {
+		this.subErrorMsg = subErrorMsg;
+	}
 
 	public int getErrCode() {
 		return errCode;
@@ -39,11 +62,58 @@ public class RemoteException extends Exception {
 	}
 
 	public RemoteException(int errCode, String msg) {
-		super(msg);
-		this.errCode = errCode;
+		this(errCode, msg, null, null);
 	}
 
 	public RemoteException(String msg) {
-		this(-1, msg);
+		this(-1, msg, null, null);
+	}
+
+	public RemoteException(int errCode, String msg, String subErrorCode, String subErrorMsg) {
+		super(msg);
+		this.errCode = errCode;
+		this.subErrorCode = subErrorCode;
+		this.subErrorMsg = subErrorMsg;
+	}
+
+	public RemoteException(String subErrorCode, String subErrorMsg, Throwable e) {
+		super(getStackTrace(e));
+		this.subErrorCode = subErrorCode;
+		this.subErrorMsg = subErrorMsg;
+	}
+
+	private static String getStackTrace(Throwable e) {
+		String stackTrace = "";
+		Writer writer = null;
+		PrintWriter printWriter = null;
+		if (e == null) {
+			return stackTrace;
+		}
+		try {
+			writer = new StringWriter();
+			printWriter = new PrintWriter(writer);
+			e.printStackTrace(printWriter);
+			stackTrace = writer.toString();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			if (printWriter != null) {
+				try {
+					printWriter.close();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+
+		return stackTrace;
 	}
 }

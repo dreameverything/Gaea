@@ -33,7 +33,13 @@ public class ParaException extends RemoteException {
 	}
 
 	public ParaException(String message) {
+		this(message, null, null);
+	}
+
+	public ParaException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.PARA_EXCEPTION);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

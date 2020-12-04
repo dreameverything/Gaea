@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bj58.spat.gaea</groupId>
 	<artifactId>com.bj58.spat.gaea.client</artifactId>
-	<version>1.0.0</version><!--
-	
+	<version>2.0.0</version>
+	<!--
 	<repositories>
 		<repository>
 			<id>58code-maven-repository</id>
@@ -15,13 +15,13 @@
 		<repository>
 			<id>releases</id>
 			<url>
-				http://192.168.25.245:8081/nexus/content/repositories/releases
+				http://192.168.2.112:8081/nexus/content/repositories/releases
 			</url>
 		</repository>
 		<snapshotRepository>
 			<id>snapshots</id>
 			<url>
-				http://192.168.25.245:8081/nexus/content/repositories/snapshots
+				http://192.168.2.112:8081/nexus/content/repositories/snapshots
 			</url>
 		</snapshotRepository>
 	</distributionManagement>	
@@ -35,13 +35,13 @@
 		<dependency>
 			<groupId>com.bj58.spat.gaea</groupId>
 			<artifactId>com.bj58.spat.gaea.protocol</artifactId>
-			<version>1.0.0</version>
+			<version>2.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.bj58.spat.gaea</groupId>
 			<artifactId>com.bj58.spat.gaea.serializer</artifactId>
-			<version>1.0.0</version>
+			<version>2.0.0</version>
 		</dependency>
 
 		<!-- Test -->
@@ -51,6 +51,7 @@
 			<version>4.8</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>

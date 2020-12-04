@@ -39,8 +39,28 @@ public class ExceptionProtocol {
     private String fromIP;
     @GaeaMember
     private String errorMsg;
+    @GaeaMember
+    private String subErrorCode;
+    @GaeaMember
+    private String subErrorMsg;
+    
+    public String getSubErrorCode() {
+		return subErrorCode;
+	}
 
-    public int getErrorCode() {
+	public void setSubErrorCode(String subErrorCode) {
+		this.subErrorCode = subErrorCode;
+	}
+
+	public String getSubErrorMsg() {
+		return subErrorMsg;
+	}
+
+	public void setSubErrorMsg(String subErrorMsg) {
+		this.subErrorMsg = subErrorMsg;
+	}
+
+	public int getErrorCode() {
         return errorCode;
     }
 

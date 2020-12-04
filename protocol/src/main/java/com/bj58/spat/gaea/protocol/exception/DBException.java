@@ -22,7 +22,7 @@ package com.bj58.spat.gaea.protocol.exception;
 
 /**
  * DBException
- *
+ * 
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class DBException extends RemoteException {
@@ -34,7 +34,13 @@ public class DBException extends RemoteException {
 	}
 
 	public DBException(String message) {
+		this(message, null, null);
+	}
+
+	public DBException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.DB);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

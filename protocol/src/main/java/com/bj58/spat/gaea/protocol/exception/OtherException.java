@@ -26,7 +26,7 @@ package com.bj58.spat.gaea.protocol.exception;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class OtherException extends RemoteException {
-	
+
 	private static final long serialVersionUID = -4914567355384666436L;
 
 	public OtherException() {
@@ -34,7 +34,13 @@ public class OtherException extends RemoteException {
 	}
 
 	public OtherException(String message) {
+		this(message, null, null);
+	}
+
+	public OtherException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.OTHER_EXCEPTION);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

@@ -73,7 +73,7 @@ public class ProtocolCreateFilter implements IFilter {
 				context.getGaeaResponse().setResponseBuffer(protocol.toBytes(Global.getSingleton().getGlobalSecureIsRights(),desKeyByte));
 			}
 		}catch(Exception ex){
-			logger.error("Server ProtocolCreateFilter error!");
+			logger.error("Server ProtocolCreateFilter error!",ex);
 		}
 	}
 

@@ -26,7 +26,7 @@ package com.bj58.spat.gaea.protocol.exception;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class JSONSerializeException extends RemoteException {
-	
+
 	private static final long serialVersionUID = -2221170899166805452L;
 
 	public JSONSerializeException() {
@@ -34,7 +34,13 @@ public class JSONSerializeException extends RemoteException {
 	}
 
 	public JSONSerializeException(String message) {
+		this(message, null, null);
+	}
+
+	public JSONSerializeException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.JSON_SERIALIZE_EXCEPTION);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

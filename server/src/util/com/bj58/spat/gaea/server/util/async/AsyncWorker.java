@@ -115,7 +115,7 @@ class AsyncWorker extends Thread {
 			final AsyncTask task = taskQueue.take();
 			if(task != null) {
 				if((System.currentTimeMillis() - task.getAddTime()) > task.getQtimeout()) {
-					task.getHandler().exceptionCaught(new TimeoutException("async task timeout!"));
+					task.getHandler().exceptionCaught(new TimeoutException("async wait task timeout!"));
 					return;
 				}else{
 					final CountDownLatch cdl = new CountDownLatch(1);
@@ -135,7 +135,7 @@ class AsyncWorker extends Thread {
 					);
 					cdl.await(getTimeout(task.getTimeout(), taskQueue.size()), TimeUnit.MILLISECONDS);
 					if(cdl.getCount() > 0) {
-						task.getHandler().exceptionCaught(new TimeoutException("async task timeout!"));
+						task.getHandler().exceptionCaught(new TimeoutException("async execute task timeout!"));
 					}
 				}
 			}else{

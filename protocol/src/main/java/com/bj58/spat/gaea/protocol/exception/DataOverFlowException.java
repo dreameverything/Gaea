@@ -34,7 +34,13 @@ public class DataOverFlowException extends RemoteException {
 	}
 
 	public DataOverFlowException(String message) {
+		this(message, null, null);
+	}
+
+	public DataOverFlowException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.DATA_OVER_FLOW_EXCEPTION);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

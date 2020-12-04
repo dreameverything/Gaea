@@ -34,7 +34,13 @@ public class NotFoundMethodException extends RemoteException {
 	}
 
 	public NotFoundMethodException(String message) {
+		this(message, null, null);
+	}
+
+	public NotFoundMethodException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.NOT_FOUND_METHOD_EXCEPTION);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

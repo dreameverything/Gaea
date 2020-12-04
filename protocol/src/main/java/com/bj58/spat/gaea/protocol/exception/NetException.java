@@ -26,7 +26,7 @@ package com.bj58.spat.gaea.protocol.exception;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class NetException extends RemoteException {
-	
+
 	private static final long serialVersionUID = 5866502787728435792L;
 
 	public NetException() {
@@ -34,7 +34,13 @@ public class NetException extends RemoteException {
 	}
 
 	public NetException(String message) {
+		this(message, null, null);
+	}
+
+	public NetException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.NET);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

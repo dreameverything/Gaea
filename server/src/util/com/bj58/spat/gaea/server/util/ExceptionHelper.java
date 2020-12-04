@@ -51,22 +51,23 @@ public class ExceptionHelper {
 			StringBuilder sbError = new StringBuilder();
 			sbError.append("error num:");
 			sbError.append(System.nanoTime());
-			sbError.append("--state:");
+			sbError.append("\n--state:");
 			sbError.append(sfe.getState().toString());
-			
-			sbError.append("--fromIP:");
-			if(sfe.getFromIP()!= null) {
+
+			sbError.append("\n--fromIP:");
+			if (sfe.getFromIP() != null) {
 				sbError.append(sfe.getFromIP());
 			}
-			sbError.append("--toIP:");
-			if(sfe.getToIP()!= null) {
+			sbError.append("\n--toIP:");
+			if (sfe.getToIP() != null) {
 				sbError.append(sfe.getToIP());
 			}
-			
-			sbError.append("--Message:");
+
+			sbError.append("\n--Message:");
 
 			if (sfe.getMessage() != null) {
 				sbError.append(sfe.getMessage());
+				sbError.append("\n");
 			}
 
 			sbError.append(getStackTrace(sfe));
@@ -74,6 +75,8 @@ public class ExceptionHelper {
 			error.setErrorMsg(sbError.toString());
 			error.setFromIP(sfe.getFromIP());
 			error.setToIP(sfe.getToIP());
+			error.setSubErrorCode(sfe.getSubErrorCode());
+			error.setSubErrorMsg(sfe.getSubErrorMsg());
 		}
 		return error;
 	}
@@ -92,8 +95,7 @@ public class ExceptionHelper {
 			state = ErrorState.OtherException;
 		}
 		error.setErrorCode(state.getStateNum());
-		error.setErrorMsg("error num:" + System.nanoTime() + "--state:"
-				+ state.toString());
+		error.setErrorMsg("error num:" + System.nanoTime() + "--state:" + state.toString());
 		error.setFromIP(fromIP);
 		error.setToIP(toIP);
 		return error;
@@ -117,10 +119,10 @@ public class ExceptionHelper {
 
 		StringBuilder sbError = new StringBuilder();
 		sbError.append("error num:" + System.nanoTime());
-		sbError.append("--state:");
+		sbError.append("\n--state:");
 		sbError.append(state.toString());
 		if (e != null) {
-			sbError.append("--Message:");
+			sbError.append("\n--Message:");
 
 			if (e.getMessage() != null) {
 				sbError.append(e.getMessage());
@@ -153,10 +155,10 @@ public class ExceptionHelper {
 
 		StringBuilder sbError = new StringBuilder();
 		sbError.append("error num:" + System.nanoTime());
-		sbError.append("--state:");
+		sbError.append("\n--state:");
 		sbError.append(ErrorState.OtherException.toString());
 		if (e != null) {
-			sbError.append("--Message:");
+			sbError.append("\n--Message:");
 
 			if (e.getMessage() != null) {
 				sbError.append(e.getMessage());
@@ -179,21 +181,18 @@ public class ExceptionHelper {
 	/**
 	 * create Error byte[] protocol
 	 * 
-	 * @param e
-	 * @param version
 	 * @return
 	 */
 	public static byte[] createErrorProtocol() {
-		byte[] P_S_TAG = {};
 		byte[] pByte = new byte[ProtocolConst.P_END_TAG.length + 1];
-		System.arraycopy(P_S_TAG, 0, pByte, 0, 1);
 		pByte[0] = 0;
-		System.arraycopy(ProtocolConst.P_END_TAG, 0, pByte, ProtocolConst.P_END_TAG.length + 1, ProtocolConst.P_END_TAG.length);
+		System.arraycopy(ProtocolConst.P_END_TAG, 0, pByte, 1, ProtocolConst.P_END_TAG.length);
 		return pByte;
 	}
-	
+
 	/**
 	 * get exception stack trace
+	 * 
 	 * @param e
 	 * @return
 	 */
@@ -206,26 +205,26 @@ public class ExceptionHelper {
 			printWriter = new PrintWriter(writer);
 			e.printStackTrace(printWriter);
 			stackTrace = writer.toString();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		} finally {
-			if(printWriter != null) {
+			if (printWriter != null) {
 				try {
 					printWriter.close();
-				} catch(Exception ex) {
+				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
-			
-			if(writer != null) {
+
+			if (writer != null) {
 				try {
 					writer.close();
-				} catch(Exception ex) {
+				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
 		}
-		
+
 		return stackTrace;
 	}
 }

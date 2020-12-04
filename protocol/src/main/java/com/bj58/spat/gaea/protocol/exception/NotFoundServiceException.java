@@ -26,7 +26,7 @@ package com.bj58.spat.gaea.protocol.exception;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class NotFoundServiceException extends RemoteException {
-	
+
 	private static final long serialVersionUID = 1170358140186199919L;
 
 	public NotFoundServiceException() {
@@ -34,7 +34,13 @@ public class NotFoundServiceException extends RemoteException {
 	}
 
 	public NotFoundServiceException(String message) {
+		this(message, null, null);
+	}
+
+	public NotFoundServiceException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.NOT_FOUND_SERVICE_EXCEPTION);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

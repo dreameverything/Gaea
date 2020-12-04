@@ -289,7 +289,7 @@ public class ScanClass {
 		}
 		Method[] methods = cls.getDeclaredMethods();
 		List<ClassInfo.MethodInfo> methodInfos = new ArrayList<ClassInfo.MethodInfo>();
-
+		logger.info("ScanClass behavior class:"+cls.getSimpleName());
 		for(Method m : methods) {
 			//only load public or protected method
 			if(Modifier.isPublic(m.getModifiers()) || Modifier.isProtected(m.getModifiers())) {
@@ -301,7 +301,6 @@ public class ScanClass {
 				
 				Class<?>[] paramAry = m.getParameterTypes();
 				Type[] types = m.getGenericParameterTypes();
-				
 				String[] paramNames = ClassHelper.getParamNames(cls, m);
 				String[] mapping = new String[paramAry.length]; 
 				HttpPathParameter[] paramAnnAry = new HttpPathParameter[paramAry.length];

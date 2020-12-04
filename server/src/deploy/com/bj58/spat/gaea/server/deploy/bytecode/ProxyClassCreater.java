@@ -176,14 +176,14 @@ public class ProxyClassCreater {
 
 				sb.append("if(listKV.size() == " + mGenericType.length);
 				for(int i=0; i<mGenericType.length; i++) {
-					String paraName = mGenericType[i].toString().replaceFirst("class ", "");
+					String paraName = mGenericType[i].toString().replaceFirst("(class)|(interface) ", "");
 					paraName = paraName.replaceAll("java.util.", "").replaceAll("java.lang.", "");
 					if(paraName.startsWith(Constant.OUT_PARAM)){
 						paraName = paraName.replaceAll(Constant.OUT_PARAM+"<", "");
 						paraName = paraName.substring(0, paraName.length() - 1);
 						paraName = paraName.replaceAll("\\<.*\\>", "");
 					}
-					if(paraName.startsWith("[")) {
+					if(paraName.trim().startsWith("[")) {
 						paraName = mType[i].getCanonicalName();
 					}
 
@@ -224,13 +224,13 @@ public class ProxyClassCreater {
 
 				//define para
 				for(int i=0; i<mGenericType.length;i++){
-					String paraName = mGenericType[i].toString().replaceFirst("class ", "");
+					String paraName = mGenericType[i].toString().replaceFirst("(class)|(interface) ", "");
 					boolean isOutPara = false;
 					if(paraName.startsWith(Constant.OUT_PARAM)){
 						isOutPara = true;
 					}
 					
-					if(paraName.startsWith("[")){
+					if(paraName.trim().startsWith("[")){
 						paraName = mType[i].getCanonicalName();
 					}
 					if(isOutPara){
@@ -293,13 +293,13 @@ public class ProxyClassCreater {
 					sb.append("try {");
 				}
 				for(int i=0; i<mGenericType.length;i++){
-					String paraName = mGenericType[i].toString().replaceFirst("class ", "");
+					String paraName = mGenericType[i].toString().replaceFirst("(class)|(interface) ", "");
 					boolean isOutPara = false;
 					if(paraName.startsWith(Constant.OUT_PARAM)){
 						isOutPara = true;
 					}
 					
-					if(paraName.startsWith("[")){
+					if(paraName.trim().startsWith("[")){
 						paraName = mType[i].getCanonicalName();
 					}
 					
@@ -393,12 +393,11 @@ public class ProxyClassCreater {
 				//define returnValue
 				Class<?> classReturn = m.getReturnType();
 				Type typeReturn = m.getGenericReturnType();
-				String returnValueType = typeReturn.toString().replaceFirst("class ", "");
-				if(returnValueType.startsWith("[")){
+				String returnValueType = typeReturn.toString().replaceFirst("(class)|(interface) ", "");
+				if(returnValueType.trim().startsWith("[")){
 					returnValueType = classReturn.getCanonicalName();
 				}
 				 
-				sb.append("try {");	
 				if(!returnValueType.equalsIgnoreCase("void")) {
 					sb.append(returnValueType.replaceAll("\\<.*\\>", "") + " returnValue = ");
 				} 
@@ -424,10 +423,6 @@ public class ProxyClassCreater {
 				
 				
 				sb.append(", listOutPara);");
-				sb.append("} catch (Exception e) {");
-				sb.append("throw new " + Constant.SERVICEFRAMEEXCEPTION_CLASS_NAME + "(\"method:" + className + "." + methodName + "--msg:invoke real service error\", context.getChannel().getRemoteIP(), context.getChannel().getLocalIP(), context.getGaeaRequest().getProtocol().getSdpEntity(), " + Constant.ERRORSTATE_CLASS_NAME + ".ServiceException, e);");
-				sb.append("}");
-
 				sb.append("}");
 				//end if
 			}

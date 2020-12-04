@@ -33,7 +33,7 @@ import com.bj58.spat.gaea.server.contract.log.LogFactory;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class SyncInvokerHandle extends InvokerBase {
-	
+
 	private static ILog logger = LogFactory.getLogger(SyncInvokerHandle.class);
 
 	/**
@@ -41,29 +41,31 @@ public class SyncInvokerHandle extends InvokerBase {
 	 */
 	@Override
 	public void invoke(GaeaContext context) throws Exception {
+		Global.getSingleton().getThreadLocal().set(context);
 		try {
-			for(IFilter f : Global.getSingleton().getGlobalRequestFilterList()) {
-				if(context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.RequestOnly) {
+			for (IFilter f : Global.getSingleton().getGlobalRequestFilterList()) {
+				if (context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.RequestOnly) {
 					f.filter(context);
 				}
 			}
-			
-			if(context.isDoInvoke()) {
+
+			if (context.isDoInvoke()) {
 				doInvoke(context);
 			}
-			
+
 			logger.debug("begin response filter");
-			// response filter
-			for(IFilter f : Global.getSingleton().getGlobalResponseFilterList()) {
-				if(context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.ResponseOnly) {
+			for (IFilter f : Global.getSingleton().getGlobalResponseFilterList()) {
+				if (context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.ResponseOnly) {
 					f.filter(context);
 				}
 			}
 			context.getServerHandler().writeResponse(context);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			context.setError(ex);
 			context.getServerHandler().writeResponse(context);
 			logger.error("in async messageReceived", ex);
+		} finally {
+			Global.getSingleton().getThreadLocal().remove();
 		}
 	}
 }

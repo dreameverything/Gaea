@@ -34,7 +34,13 @@ public class TimeoutException extends RemoteException {
 	}
 
 	public TimeoutException(String message) {
+		this(message, null, null);
+	}
+
+	public TimeoutException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.TIME_OUT);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

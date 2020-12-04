@@ -20,21 +20,19 @@
  */
 package com.bj58.spat.gaea.server.core.proxy;
 
+import com.bj58.spat.gaea.protocol.sdp.RequestProtocol;
 import com.bj58.spat.gaea.protocol.sfp.v1.Protocol;
 import com.bj58.spat.gaea.server.contract.context.ExecFilterType;
 import com.bj58.spat.gaea.server.contract.context.GaeaContext;
 import com.bj58.spat.gaea.server.contract.context.GaeaResponse;
 import com.bj58.spat.gaea.server.contract.context.Global;
 import com.bj58.spat.gaea.server.contract.context.SecureContext;
-import com.bj58.spat.gaea.server.contract.context.ServerType;
 import com.bj58.spat.gaea.server.contract.filter.IFilter;
-import com.bj58.spat.gaea.server.contract.http.HttpThreadLocal;
 import com.bj58.spat.gaea.server.contract.log.ILog;
 import com.bj58.spat.gaea.server.contract.log.LogFactory;
 import com.bj58.spat.gaea.server.util.ExceptionHelper;
 import com.bj58.spat.gaea.server.util.async.AsyncInvoker;
 import com.bj58.spat.gaea.server.util.async.IAsyncHandler;
-
 
 /**
  * async service invoke handle
@@ -50,20 +48,18 @@ public class AsyncInvokerHandle extends InvokerBase {
 	 * 异步执行器
 	 */
 	private AsyncInvoker asyncInvoker;
-	private HttpThreadLocal httpThreadLocal;
 	private int taskTimeOut = 1000;
-	
+
 	public AsyncInvokerHandle() {
 		try {
-			httpThreadLocal = HttpThreadLocal.getInstance();
 			int workerCount = Global.getSingleton().getServiceConfig().getInt("gaea.async.worker.count");
-			if(workerCount > 0) {
+			if (workerCount > 0) {
 				asyncInvoker = AsyncInvoker.getInstance(workerCount);
-			} else  {
+			} else {
 				asyncInvoker = AsyncInvoker.getInstance();
 			}
 			String sTaskTimeOut = Global.getSingleton().getServiceConfig().getString("gaea.server.tcp.task.timeout");
-			if(sTaskTimeOut != null && !"".equals(sTaskTimeOut)){
+			if (sTaskTimeOut != null && !"".equals(sTaskTimeOut)) {
 				taskTimeOut = Integer.parseInt(sTaskTimeOut);
 			}
 			logger.info("async worker count:" + workerCount);
@@ -71,97 +67,96 @@ public class AsyncInvokerHandle extends InvokerBase {
 			logger.error("init AsyncInvokerHandle error", e);
 		}
 	}
-	
+
 	@Override
 	public void invoke(final GaeaContext context) throws Exception {
 		logger.debug("-------------------begin async invoke-------------------");
-		asyncInvoker.run(taskTimeOut, new IAsyncHandler(){
+		asyncInvoker.run(taskTimeOut, new IAsyncHandler() {
 			@Override
 			public Object run() throws Throwable {
 				logger.debug("begin request filter");
 				// request filter
-				for(IFilter f : Global.getSingleton().getGlobalRequestFilterList()) {
-					if(context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.RequestOnly) {
+				for (IFilter f : Global.getSingleton().getGlobalRequestFilterList()) {
+					if (context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.RequestOnly) {
 						f.filter(context);
 					}
 				}
-				
-				if(context.isDoInvoke()) {
-					if(context.getServerType() == ServerType.HTTP){
-						httpThreadLocal.set(context.getHttpContext());
-					}
+
+				if (context.isDoInvoke()) {
+					Global.getSingleton().getThreadLocal().set(context);
 					doInvoke(context);
 				}
-				
+
 				logger.debug("begin response filter");
 				// response filter
-				for(IFilter f : Global.getSingleton().getGlobalResponseFilterList()) {
-					if(context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.ResponseOnly) {
+				for (IFilter f : Global.getSingleton().getGlobalResponseFilterList()) {
+					if (context.getExecFilter() == ExecFilterType.All || context.getExecFilter() == ExecFilterType.ResponseOnly) {
 						f.filter(context);
 					}
 				}
 				return context;
 			}
-			
+
 			@Override
 			public void messageReceived(Object obj) {
-				if(context.getServerType() == ServerType.HTTP){
-					httpThreadLocal.remove();
-				}
-				if(obj != null) {
-					GaeaContext ctx = (GaeaContext)obj;
+				Global.getSingleton().getThreadLocal().remove();
+				if (obj != null) {
+					GaeaContext ctx = (GaeaContext) obj;
 					ctx.getServerHandler().writeResponse(ctx);
 				} else {
 					logger.error("context is null!");
 				}
 			}
-			
+
 			@Override
 			public void exceptionCaught(Throwable e) {
-				if(context.getServerType() == ServerType.HTTP){
-					httpThreadLocal.remove();
-				}
-				
-				if(context.getGaeaResponse() == null){
+				Global.getSingleton().getThreadLocal().remove();
+
+				if (context.getGaeaResponse() == null) {
 					GaeaResponse respone = new GaeaResponse();
 					context.setGaeaResponse(respone);
 				}
-				
+
 				try {
 					byte[] desKeyByte = null;
 					String desKeyStr = null;
 					boolean bool = false;
-					
+
 					Global global = Global.getSingleton();
-					if(global != null){
-						//判断当前服务启用权限认证
-						if(global.getGlobalSecureIsRights()){
+					if (global != null) {
+						// 判断当前服务启用权限认证
+						if (global.getGlobalSecureIsRights()) {
 							SecureContext securecontext = global.getGlobalSecureContext(context.getChannel().getNettyChannel());
 							bool = securecontext.isRights();
-							if(bool){
+							if (bool) {
 								desKeyStr = securecontext.getDesKey();
 							}
 						}
 					}
-					
-					if(desKeyStr != null){
+
+					if (desKeyStr != null) {
 						desKeyByte = desKeyStr.getBytes("utf-8");
 					}
-					
+
 					Protocol protocol = context.getGaeaRequest().getProtocol();
-					if(protocol == null){
-						protocol = Protocol.fromBytes(context.getGaeaRequest().getRequestBuffer(),global.getGlobalSecureIsRights(),desKeyByte);
+					if (protocol == null) {
+						protocol = Protocol.fromBytes(context.getGaeaRequest().getRequestBuffer(), global.getGlobalSecureIsRights(),
+								desKeyByte);
 						context.getGaeaRequest().setProtocol(protocol);
 					}
 					protocol.setSdpEntity(ExceptionHelper.createError(e));
-					context.getGaeaResponse().setResponseBuffer(protocol.toBytes(Global.getSingleton().getGlobalSecureIsRights(),desKeyByte));
+					context.getGaeaResponse().setResponseBuffer(
+							protocol.toBytes(Global.getSingleton().getGlobalSecureIsRights(), desKeyByte));
 				} catch (Exception ex) {
-					context.getGaeaResponse().setResponseBuffer(new byte[]{0});
+					context.getGaeaResponse().setResponseBuffer(new byte[] { 0 });
 					logger.error("AsyncInvokerHandle invoke-exceptionCaught error", ex);
 				}
-				
+
 				context.getServerHandler().writeResponse(context);
-				logger.error("AsyncInvokerHandle invoke error", e);
+				Protocol protocol = context.getGaeaRequest().getProtocol();
+				RequestProtocol request = (RequestProtocol) protocol.getSdpEntity();
+				logger.error(String.format("SYSEXCEPTION;;remoteIp::%s;;methodName::%s.%s;;errorMessage::%s", context.getChannel()
+						.getRemoteIP(), request.getLookup(), request.getMethodName(), e.getMessage()), e);
 			}
 		});
 	}

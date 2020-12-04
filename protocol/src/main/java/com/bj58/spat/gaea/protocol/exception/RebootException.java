@@ -19,6 +19,7 @@
  *  under the License.
  */
 package com.bj58.spat.gaea.protocol.exception;
+
 /**
  * 服务重启异常
  * 
@@ -33,7 +34,13 @@ public class RebootException extends RemoteException {
 	}
 
 	public RebootException(String message) {
+		this(message, null, null);
+	}
+
+	public RebootException(String message, String subErrorCode, String subErrorMsg) {
 		super(message);
 		this.setErrCode(ReturnType.REBOOT_EXCEPTION);
+		this.setSubErrorCode(subErrorCode);
+		this.setSubErrorMsg(subErrorMsg);
 	}
 }

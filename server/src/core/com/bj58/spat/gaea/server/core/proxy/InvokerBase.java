@@ -46,9 +46,10 @@ public abstract class InvokerBase implements IInvokerHandle {
 	 * log
 	 */
 	private final static ILog logger = LogFactory.getLogger(InvokerBase.class);
-	
+
 	/**
 	 * 调用真实服务
+	 * 
 	 * @param context
 	 */
 	void doInvoke(GaeaContext context) {
@@ -58,11 +59,11 @@ public abstract class InvokerBase implements IInvokerHandle {
 		StopWatch sw = context.getStopWatch();
 		Object response = null;
 		Protocol protocol = null;
-		
+		protocol = context.getGaeaRequest().getProtocol();
+		RequestProtocol request = (RequestProtocol) protocol.getSdpEntity();
+
 		try {
-		    protocol = context.getGaeaRequest().getProtocol();
-			RequestProtocol request = (RequestProtocol)protocol.getSdpEntity();
-			
+
 			sbInvokerMsg.append("protocol version:");
 			sbInvokerMsg.append(protocol.getVersion());
 			sbInvokerMsg.append("\nfromIP:");
@@ -72,10 +73,10 @@ public abstract class InvokerBase implements IInvokerHandle {
 			sbInvokerMsg.append("\nmethodName:");
 			sbInvokerMsg.append(request.getMethodName());
 			sbInvokerMsg.append("\nparams:");
-			
-			if(request.getParaKVList() != null){
+
+			if (request.getParaKVList() != null) {
 				for (KeyValuePair kv : request.getParaKVList()) {
-					if(kv != null) {
+					if (kv != null) {
 						sbInvokerMsg.append("\n--key:");
 						sbInvokerMsg.append(kv.getKey());
 						sbInvokerMsg.append("\n--value:");
@@ -85,71 +86,71 @@ public abstract class InvokerBase implements IInvokerHandle {
 					}
 				}
 			}
-			
+
 			logger.debug(sbInvokerMsg.toString());
 			logger.debug("begin get proxy factory");
-			
+
 			// get local proxy
 			IProxyStub localProxy = Global.getSingleton().getProxyFactory().getProxy(request.getLookup());
 			logger.debug("proxyFactory.getProxy finish");
 
 			if (localProxy == null) {
-				ServiceFrameException sfe = new ServiceFrameException(
-						"method:ProxyHandle.invoke--msg:" + request.getLookup() + "." + request.getMethodName() + " not fond",
-						context.getChannel().getRemoteIP(), 
-						context.getChannel().getLocalIP(), 
-						request,
-						ErrorState.NotFoundServiceException, 
-						null);
+				ServiceFrameException sfe = new ServiceFrameException("method:ProxyHandle.invoke--msg:" + request.getLookup() + "."
+						+ request.getMethodName() + " not fond", context.getChannel().getRemoteIP(), context.getChannel().getLocalIP(),
+						request, ErrorState.NotFoundServiceException, null);
 				response = ExceptionHelper.createError(sfe);
-				logger.error("localProxy is null", sfe);
+				logger.error(String.format("SYSERR;;RemoteIp::%s;;LocalIp::%s;;Method::%s.%s;;ErrMsg::%s", context.getChannel()
+						.getRemoteIP(), context.getChannel().getLocalIP(), request.getLookup(), request.getMethodName(),
+						"NotFoundServiceException"));
 			} else {
 				logger.debug("begin localProxy.invoke");
 				String swInvoderKey = "InvokeRealService_" + request.getLookup() + "." + request.getMethodName();
 				sw.startNew(swInvoderKey, sbInvokerMsg.toString());
 				sw.setFromIP(context.getChannel().getRemoteIP());
 				sw.setLocalIP(context.getChannel().getLocalIP());
-				
-				//invoker real service
+
+				// invoker real service
 				GaeaResponse gaeaResponse = localProxy.invoke(context);
-				
+
 				sw.stop(swInvoderKey);
-				
+
 				logger.debug("end localProxy.invoke");
 				context.setGaeaResponse(gaeaResponse);
 				response = createResponse(gaeaResponse);
 				logger.debug("localProxy.invoke finish");
 			}
 		} catch (ServiceFrameException sfe) {
-			logger.error("ServiceFrameException when invoke service fromIP:" + context.getChannel().getRemoteIP() + "  toIP:" + context.getChannel().getLocalIP(), sfe);
+			logger.error(String.format("SYSEXCEPTION;;remoteIp::%s;;methodName::%s.%s;;errorMessage::%s", context.getChannel()
+					.getRemoteIP(), request.getLookup(), request.getMethodName(), sfe.getErrorMsg()), sfe);
 			response = ExceptionHelper.createError(sfe);
 			context.setError(sfe);
 		} catch (Throwable e) {
-			logger.error("Exception when invoke service fromIP:" + context.getChannel().getRemoteIP() + "  toIP:" + context.getChannel().getLocalIP(), e);
+			logger.error(String.format("SYSEXCEPTION;;remoteIp::%s;;methodName::%s.%s;;errorMessage::%s", context.getChannel()
+					.getRemoteIP(), request.getLookup(), request.getMethodName(), e.getMessage()), e);
 			response = ExceptionHelper.createError(e);
 			context.setError(e);
 		}
-		
+
 		protocol.setSdpEntity(response);
 		logger.debug("---------------------------------- end --------------------------------");
 	}
-	
-	
+
 	/**
 	 * create response message body
+	 * 
 	 * @param gaeaResponse
 	 * @return
 	 */
 	ResponseProtocol createResponse(GaeaResponse gaeaResponse) {
-		if(gaeaResponse.getOutParaList()!= null && gaeaResponse.getOutParaList().size() > 0){
+		if (gaeaResponse.getOutParaList() != null && gaeaResponse.getOutParaList().size() > 0) {
 			int outParaSize = gaeaResponse.getOutParaList().size();
 			Object[] objArray = new Object[outParaSize];
-			for(int i=0; i<outParaSize; i++) {
+			for (int i = 0; i < outParaSize; i++) {
 				objArray[i] = gaeaResponse.getOutParaList().get(i).getOutPara();
 			}
-            return new ResponseProtocol(gaeaResponse.getReturnValue(), objArray);
-        } else {
-            return new ResponseProtocol(gaeaResponse.getReturnValue(), null);
-        }
+			return new ResponseProtocol(gaeaResponse.getReturnValue(), objArray);
+		} else {
+			return new ResponseProtocol(gaeaResponse.getReturnValue(), null);
+		}
 	}
 }

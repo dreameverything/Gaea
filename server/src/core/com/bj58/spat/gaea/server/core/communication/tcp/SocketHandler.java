@@ -75,9 +75,9 @@ public class SocketHandler extends SimpleChannelUpstreamHandler implements IServ
 			
 			SocketServer.invokerHandle.invoke(gaeaContext);
 		} catch(Throwable ex) {
+			logger.error("SocketHandler invoke error", ex);
 			byte[] response = ExceptionHelper.createErrorProtocol();
 			e.getChannel().write(response);
-			logger.error("SocketHandler invoke error", ex);
 		}
 	}
 	

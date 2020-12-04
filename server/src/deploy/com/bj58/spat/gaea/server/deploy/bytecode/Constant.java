@@ -20,6 +20,7 @@
  */
 package com.bj58.spat.gaea.server.deploy.bytecode;
 
+import com.bj58.spat.gaea.protocol.exception.RemoteException;
 import com.bj58.spat.gaea.protocol.sdp.RequestProtocol;
 import com.bj58.spat.gaea.protocol.utility.KeyValuePair;
 import com.bj58.spat.gaea.server.contract.annotation.OperationContract;
@@ -98,8 +99,7 @@ public class Constant {
 	/**
 	 * IProxyFactory class name
 	 */
-	public static final String IPROXYFACTORY_CLASS_NAME = IProxyFactory.class
-			.getName();
+	public static final String IPROXYFACTORY_CLASS_NAME = IProxyFactory.class.getName();
 
 	/**
 	 * OperationContract class name
@@ -115,4 +115,9 @@ public class Constant {
 	 * ServiceContract class name
 	 */
 	public static final String SERVICECONTRACT_CLASS_NAME = ContractInfo.class.getName();
+
+	/**
+	 * Exception class name;
+	 */
+	public static final String EXCEPTION_CLASS_NAME = RemoteException.class.getName();
 }
