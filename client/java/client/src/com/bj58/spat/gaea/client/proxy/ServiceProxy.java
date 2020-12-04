@@ -180,7 +180,7 @@ public class ServiceProxy {
         	return invoke(returnType, typeName, methodName, paras);
         }else if (receiveP.getSDPType() == SDPType.Exception) {
             ExceptionProtocol ep = (ExceptionProtocol)receiveP.getSdpEntity();
-            throw ThrowErrorHelper.throwServiceError(ep.getErrorCode(), ep.getErrorMsg());
+            throw ThrowErrorHelper.throwServiceError(ep.getErrorCode(), ep.getErrorMsg(),ep.getSubErrorCode(),ep.getSubErrorMsg());
         } else {
             throw new Exception("userdatatype error!");
         }

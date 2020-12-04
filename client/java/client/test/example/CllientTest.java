@@ -10,7 +10,7 @@ public class CllientTest {
 	
 	public static void main(String[] args) throws Exception {
 		//加载配置文件
-		GaeaInit.init("e:/gaea.config");
+		GaeaInit.init("E:/GaeaStudy/gaea.config");
 		/**
 		 * 调用URL
 		 * 格式:tcp://服务名//接口实现类

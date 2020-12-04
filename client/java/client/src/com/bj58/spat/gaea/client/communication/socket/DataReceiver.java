@@ -136,7 +136,7 @@ class Handle implements Runnable {
         try {
             socket.frameHandle();
         } catch (Throwable ex) {
-            logger.error("socket frameHandle error "+ex);
+            logger.error("socket frameHandle error "+ex,ex);
             if (!socket.connecting()) {
                 socket.dispose(true);
             }

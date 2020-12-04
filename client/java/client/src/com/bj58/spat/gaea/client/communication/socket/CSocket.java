@@ -81,41 +81,42 @@ public class CSocket {
         logger.info("MaxPakageSize:" + config.getMaxPakageSize());
 		logger.info("SendBufferSize:" + config.getSendBufferSize());
 		logger.info("RecvBufferSize:" + config.getRecvBufferSize());
-        logger.info("create a new connection :" + this.toString());
-    }
-    
-    public int send(byte[] data) throws IOException, Throwable {
-        try {
-            synchronized (sendLockHelper) {
-                int pakageSize = data.length + ProtocolConst.P_END_TAG.length;
-                if (sendBuffer.capacity() < pakageSize) {
-                    throw new DataOverFlowException("数据包(size:" + pakageSize + ")超过最大限制,请修改或增加配置文件中的<SocketPool maxPakageSize=\"" + socketConfig.getMaxPakageSize() + "\"/>节点属性！");
-                }
-          
-	            int count = 0;
-	    		sendBuffer.clear();
-	    		sendBuffer.put(data);
-	    		sendBuffer.put(ProtocolConst.P_END_TAG);
-	    		sendBuffer.flip();
-	    		
-	    		int retryCount = 0;
-	    		while(sendBuffer.hasRemaining()) {
-	    			count += channel.write(sendBuffer);
-	    			
-	    			if(retryCount++ > 10) {
-	    				throw new Exception("retry write count(" + retryCount + ") above 10");
-	    			}
-	    		}
-	    		return count;
-            }
-        } catch (IOException ex) {
-            _connecting = false;
-            throw ex;
-        } catch (NotYetConnectedException ex) {
-            _connecting = false;
-            throw ex;
-        }
-    }
+		logger.info("create a new connection :" + this.toString());
+	}
+
+	public int send(byte[] data) throws IOException, Throwable {
+		try {
+			synchronized (sendLockHelper) {
+				int pakageSize = data.length + ProtocolConst.P_END_TAG.length;
+				if (sendBuffer.capacity() < pakageSize) {
+					throw new DataOverFlowException("数据包(size:" + pakageSize + ")超过最大限制,请修改或增加配置文件中的<SocketPool maxPakageSize=\""
+							+ socketConfig.getMaxPakageSize() + "\"/>节点属性！");
+				}
+
+				int count = 0;
+				sendBuffer.clear();
+				sendBuffer.put(data);
+				sendBuffer.put(ProtocolConst.P_END_TAG);
+				sendBuffer.flip();
+
+				int retryCount = 0;
+				while (sendBuffer.hasRemaining()) {
+					count += channel.write(sendBuffer);
+
+					if (retryCount++ > 10) {
+						throw new Exception("retry write count(" + retryCount + ") above 10");
+					}
+				}
+				return count;
+			}
+		} catch (IOException ex) {
+			_connecting = false;
+			throw ex;
+		} catch (NotYetConnectedException ex) {
+			_connecting = false;
+			throw ex;
+		}
+	}
 
     public byte[] receive(int sessionId, int queueLen) throws IOException, TimeoutException, Exception {
         WindowData wd = WaitWindows.get(sessionId);
