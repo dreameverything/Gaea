@@ -51,7 +51,7 @@ public class DynamicClassLoader extends SecureClassLoader {
 	/**
 	 * jar list load class from this
 	 */
-	private static List<String> jarList = new ArrayList<String>();
+	private static final List<String> jarList = new ArrayList<String>();
 	
 	/**
 	 * class cache
@@ -65,6 +65,10 @@ public class DynamicClassLoader extends SecureClassLoader {
 	
 	public DynamicClassLoader() {
 		
+	}
+
+	public static final List<String> jarList(){
+		return jarList;
 	}
 	
 	/**

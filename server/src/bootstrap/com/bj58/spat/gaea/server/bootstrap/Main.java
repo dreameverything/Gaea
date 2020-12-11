@@ -51,7 +51,7 @@ import com.bj58.spat.gaea.server.deploy.hotdeploy.ProxyFactoryLoader;
  * 
  * @author Service Platform Architecture Team (spat@58.com)
  */
-public class Main {
+public class Main extends DynamicClassLoader {
 
 	private static ILog logger = null;
 	
@@ -97,7 +97,7 @@ public class Main {
 		loadLog4jConfig(log4jConfigPath, log4jConfigDefaultPath);
 		logger = LogFactory.getLogger(Main.class);
 		
-		logger.info("+++++++++++++++++++++ staring +++++++++++++++++++++\n");
+		logger.info("+++++++++++++++++++++ starting +++++++++++++++++++++\n");
 		
 		logger.info("user.dir: " + userDir);
 		logger.info("rootPath: " + rootPath);
@@ -124,17 +124,14 @@ public class Main {
 		// init class loader
 		logger.info("-----------------loading global jars------------------");
 		DynamicClassLoader classLoader = new DynamicClassLoader();
+		//找到各个目录中文件后缀为rar、jar、war、ear的文件路径
 		classLoader.addFolder(
 				rootPath + "service/deploy/" + sc.getString("gaea.service.name") + "/",
 				rootPath + "service/lib/",
 				rootPath + "lib"
 				);
-		
-		GlobalClassLoader.addSystemClassPathFolder(
-				rootPath + "service/deploy/" + sc.getString("gaea.service.name") + "/",
-				rootPath + "service/lib/",
-				rootPath + "lib"
-				);
+		logger.info( "需要动态加载的jar文件个数为："+DynamicClassLoader.jarList().size() );
+		GlobalClassLoader.addSystemClassPathFolder( DynamicClassLoader.jarList() );
 		logger.info("-------------------------end-------------------------\n");
 
 		if(new File(serviceFolderPath).isDirectory() || !serviceName.equalsIgnoreCase("error_service_name_is_null")) {
@@ -199,9 +196,9 @@ public class Main {
 		
 		// add current service file to monitor
 		if(sc.getBoolean("gaea.hotdeploy")) {
-			logger.info("------------------init file monitor-----------------");
+			logger.info("------------------[begin]init file monitor-----------------");
 			addFileMonitor(rootPath, sc.getString("gaea.service.name"));
-			logger.info("-------------------------end-------------------------\n");
+			logger.info("-------------------------[end]init file monitor-------------------------\n");
 		}
 		
 		try {
@@ -236,7 +233,7 @@ public class Main {
 	/**
 	 * 
 	 * @param configPath
-	 * @param logFilePath
+	 * @param defaultPath
 	 * @throws Exception
 	 */
 	private static void loadLog4jConfig(String configPath, String defaultPath) throws Exception {
@@ -274,8 +271,7 @@ public class Main {
 	/**
 	 * 加载授权文件方法
 	 * @param sc
-	 * @param key
-	 * @param serverName
+	 * @param path
 	 * @throws Exception
 	 */
 	private static void loadSecureKey(ServiceConfig sc, String path) throws Exception{
@@ -342,7 +338,8 @@ public class Main {
 	
 	/**
 	 * add current service file to file monitor
-	 * @param config
+	 * @param rootPath
+	 * @param serviceName
 	 * @throws Exception 
 	 */
 	private static void addFileMonitor(String rootPath, String serviceName) throws Exception {

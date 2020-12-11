@@ -51,6 +51,7 @@ public class GlobalClassLoader {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		//因为addURL方法是protected的，这里将该方法可见
 		addURL.setAccessible(true);
 	}
 
@@ -66,6 +67,11 @@ public class GlobalClassLoader {
 		return getSystemClassLoader().getParent();
 	}
 
+	/**
+	 * 将jar文件通过URLClassLoader的addURL方法进行动态加载
+	 * @param url
+	 * @throws Exception
+	 */
 	public static void addURL2SystemClassLoader(URL url) throws Exception {
 		try {
 			logger.info("append jar to classpath:" + url.toString());
@@ -102,9 +108,25 @@ public class GlobalClassLoader {
 		}
 	}
 
+	/**
+	 * 扫描参数中指定的多个目录，将这些目录中的jar文件通过URLClassLoader动态加载到内存中。
+	 * @param dirs
+	 * @throws Exception
+	 */
 	public static void addSystemClassPathFolder(String... dirs)
 			throws Exception {
 		List<String> jarList = FileHelper.getUniqueLibPath(dirs);
+		for (String jar : jarList) {
+			addSystemClassPath(jar);
+		}
+	}
+
+	public static void addSystemClassPathFolder(List<String> jarList)
+			throws Exception {
+		if(jarList==null || jarList.isEmpty()){
+			logger.warn("没有需要动态加载的jar包");
+			return;
+		}
 		for (String jar : jarList) {
 			addSystemClassPath(jar);
 		}
