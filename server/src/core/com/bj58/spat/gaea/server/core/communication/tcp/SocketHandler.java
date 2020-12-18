@@ -61,7 +61,8 @@ public class SocketHandler extends SimpleChannelUpstreamHandler implements IServ
 			ByteBuffer buffer = ((ChannelBuffer)e.getMessage()).toByteBuffer();
 			byte[] reciveByte = buffer.array();
 			logger.debug("reciveByte.length:" + reciveByte.length);
-			
+
+			//TODO renjia 为什么要空拷贝一次，多此一举？
 			byte[] headDelimiter = new byte[0];
 			System.arraycopy(reciveByte, 0, headDelimiter, 0, 0);
 			
@@ -103,6 +104,15 @@ public class SocketHandler extends SimpleChannelUpstreamHandler implements IServ
 		
 	}
 
+	/**
+	 * 系统默认的Filter如下：
+	 * com.bj58.spat.gaea.server.filter.ProtocolParseFilter
+	 * com.bj58.spat.gaea.server.filter.HandclaspFilter
+	 * com.bj58.spat.gaea.server.filter.ExecuteMethodFilter
+	 * @param ctx
+	 * @param e
+	 * @throws Exception
+	 */
 	@Override
 	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
 		for(IFilter filter : Global.getSingleton().getConnectionFilterList()) {

@@ -45,7 +45,7 @@ import com.bj58.spat.gaea.server.deploy.hotdeploy.DynamicClassLoader;
 public class ClassHelper {
 
 	/**
-	 * get all class from jar
+	 * 获取jar文件中的所有的Class类，并通过classLoader自定义的类加载器加载到JVM中
 	 * @param jarPath
 	 * @param classLoader
 	 * @return

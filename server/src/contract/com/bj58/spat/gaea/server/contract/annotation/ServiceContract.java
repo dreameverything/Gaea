@@ -35,5 +35,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ServiceContract {
+	/**
+	 * 如果为true，则类中的方法包括父接口中的方法都默认为可以对外提供RPC调用的接口
+	 * @return
+	 */
 	public boolean defaultAll() default false;
 }

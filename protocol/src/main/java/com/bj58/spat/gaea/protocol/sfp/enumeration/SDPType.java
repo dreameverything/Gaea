@@ -33,7 +33,8 @@ import com.bj58.spat.gaea.protocol.sdp.ResponseProtocol;
  */
 public enum SDPType {
 	/**
-	 * Reset:服务重启协议 ;Handclasp:权限认证协议
+	 * Reset:服务重启协议
+	 * Handclasp:权限认证协议，该阶段无需解密
 	 */
     Response(1),
     Request(2),

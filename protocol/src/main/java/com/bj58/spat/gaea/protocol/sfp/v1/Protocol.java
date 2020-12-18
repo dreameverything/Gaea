@@ -30,19 +30,19 @@ import com.bj58.spat.gaea.protocol.utility.ByteConverter;
 import com.bj58.spat.gaea.secure.DESCoderHelper;
 
 /**
- * 
+ * <pre>
  * 版本一协义定义
  * 
  * 1byte(版本号) | 4byte(协义总长度) | 4byte(序列号) | 1byte(服务编号) | 1byte(消息体类型) | 1byte 所采用的压缩算法 | 1byte 序列化规则 | 1byte 平台(.net java ...) | n byte消息体 | 5byte(分界符)
  *    0                1~4              5~8              9                   10                   11                      12                     13
- * 消息头总长度:14byte 
+ * 消息头总长度:14byte
  * 
  * 协义总长度 = 消息头总长度 + 消息体总长度 (不包括分界符)
  * 
  * 尾分界符: 9, 11, 13, 17, 18
  * 
- * 版本号从ASCII > 48 开始标识
- * 
+ * 版本号从ASCII > 48 开始标识。48对应的字符为=>0，57对应的字符为=>9
+ * </pre>
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class Protocol {
@@ -290,41 +290,47 @@ public class Protocol {
     public static Protocol fromBytes(byte[] data, boolean rights, byte[] desKey) throws Exception {
         Protocol p = new Protocol();
         int startIndex = 0;
+        //单字节是没有大端序和小端序之分的，所以不用转换
         if(data[startIndex] != Protocol.VERSION) {
         	throw new Exception("协义版本错误");
         }
 
         startIndex += SFPStruct.Version;//1
+
+        //获取协议的总长度，占4个字节
         byte[] totalLengthByte = new byte[SFPStruct.TotalLen];
         for (int i = 0; i < SFPStruct.TotalLen; i++) {
             totalLengthByte[i] = data[startIndex + i];
         }
+
+        //TODO renjia 这里Client发送数据时，已经转换为小端序了，这里为什么还要再次转换一次？
         p.setTotalLen(ByteConverter.bytesToIntLittleEndian(totalLengthByte));
 
+        //获取序列号，占4个字节
         startIndex += SFPStruct.TotalLen;//5
         byte[] sessionIDByte = new byte[SFPStruct.SessionId];
         for (int i = 0; i < SFPStruct.SessionId; i++) {
             sessionIDByte[i] = data[startIndex + i];
         }
         p.setSessionID(ByteConverter.bytesToIntLittleEndian(sessionIDByte));
-
+        //获取服务编号，占1个字节
         startIndex += SFPStruct.SessionId;//9
         p.setServiceID(data[startIndex]);
-
+        //获取消息体类型，占1个字节
         startIndex += SFPStruct.ServerId;//10
         p.setSDPType(SDPType.getSDPType(data[startIndex]));
-
+        //获取压缩算法，占1个字节
         startIndex += SFPStruct.SDPType;
         CompressType ct = CompressType.getCompressType(data[startIndex]);
         p.setCompressType(ct);
-
+        //获取序列化协议（JSON、GAEABinary），占1个字节
         startIndex += SFPStruct.CompressType;
         SerializeType st = SerializeType.getSerializeType(data[startIndex]);
         p.setSerializeType(st);
-
+        //平台类型，例如Dotnet、java、C
         startIndex += SFPStruct.SerializeType;
         p.setPlatformType(PlatformType.getPlatformType(data[startIndex]));
-
+        //获取消息体（TODO renjia 为何不转为小端序呢？）
         startIndex += SFPStruct.Platform;
 
         byte[] sdpData = new byte[data.length - startIndex];

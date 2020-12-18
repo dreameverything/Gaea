@@ -43,7 +43,7 @@ import com.bj58.spat.gaea.server.util.ClassHelper;
 import com.bj58.spat.gaea.server.util.FileHelper;
 
 /**
- * GaeaBinaryConvert
+ * 全局单例加载类
  * 
  * @author Service Platform Architecture Team (spat@58.com)
  */
@@ -61,12 +61,12 @@ public class ScanClass {
 	private static ContractInfo contractInfo = null;
 	
 	/**
-	 * contract ClassInfo
+	 * 存放ServiceContract注解的类
 	 */
 	private static List<ClassInfo> contractClassInfos = null;
 	
 	/**
-	 * behavior ClassInfo
+	 * 存放ServiceContract注解的类
 	 */
 	private static List<ClassInfo> behaviorClassInfos = null;
 	
@@ -132,7 +132,7 @@ public class ScanClass {
 	
 	
 	/**
-	 * scan jars create ContractInfo
+	 * 扫描jar包，创建ContractInfo
 	 * @param path
 	 * @param classLoader
 	 * @return
@@ -144,7 +144,7 @@ public class ScanClass {
 		List<String> jarPathList = FileHelper.getUniqueLibPath(path);
 
 		if(jarPathList == null) {
-		    throw new Exception("no jar fonded from path: " + path);
+		    throw new Exception("no jar found from path: " + path);
 		}
 
 		contractClassInfos = new ArrayList<ClassInfo>();

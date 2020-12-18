@@ -28,7 +28,12 @@ package com.bj58.spat.gaea.protocol.utility;
 public class ByteConverter {
 
     /**
+     * <pre>
      * byte array to int (little endian)
+     * buf[0] buf[1] buf[2] buf[3]
+     * TO:
+     * buf[3] buf[2] buf[1] buf[0]
+     * </pre>
      * @param buf
      * @return
      */

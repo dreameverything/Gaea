@@ -70,6 +70,7 @@ public class SocketServer implements IServer {
 	@Override
 	public void start() throws Exception {
 		logger.info("loading invoker...");
+		//gaea.proxy.invoker.implement的默认值是：com.bj58.spat.gaea.server.core.proxy.AsyncInvokerHandle
 		String invoker = Global.getSingleton().getServiceConfig().getString("gaea.proxy.invoker.implement");
 		invokerHandle = (IInvokerHandle) Class.forName(invoker).newInstance();
 		logger.info("initing server...");

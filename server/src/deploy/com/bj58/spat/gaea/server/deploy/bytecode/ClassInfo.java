@@ -29,17 +29,23 @@ import com.bj58.spat.gaea.server.contract.annotation.HttpRequestMapping;
 
 /**
  * GaeaBinaryConvert
- * 
+ * 类的定义
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class ClassInfo {
 
 	private Class<?> cls;
+	/**
+	 * 服务类中的方法定义列表
+	 */
 	private List<MethodInfo> methodList;
 	private ClassType classType;
 	private String lookUP;
 
 	public static class MethodInfo {
+		/**
+		 * 服务类中的方法
+		 */
 		private Method method;
 		private ParamInfo[] paramInfoAry;
 		private HttpRequestMapping httpRequestMapping;
@@ -70,9 +76,18 @@ public class ClassInfo {
 	}
 
 	public static class ParamInfo {
+		/**
+		 * 参数索引
+		 */
 		private int index;
 		private Class<?> cls;
+		/**
+		 * 参数类型
+		 */
 		private Type type;
+		/**
+		 * 参数名称
+		 */
 		private String name;
 		private String mapping;
 		private HttpPathParameter httpPathParameter;

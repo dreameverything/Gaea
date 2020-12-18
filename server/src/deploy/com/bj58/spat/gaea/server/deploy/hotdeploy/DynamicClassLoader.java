@@ -66,13 +66,9 @@ public class DynamicClassLoader extends SecureClassLoader {
 	public DynamicClassLoader() {
 		
 	}
-
-	public static final List<String> jarList(){
-		return jarList;
-	}
 	
 	/**
-	 * dynamic find class from jar
+	 * 如果在父类加载器中找不到类，就通过此类进行查找，并将类文件加载到JVM
 	 * @param jarPath
 	 * @param className
 	 * @param fromCache
@@ -112,12 +108,13 @@ public class DynamicClassLoader extends SecureClassLoader {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
+		//加载到JVM并缓存
 		return findClass(className, clsByte, url);
 	}
 	
 	
 	/**
-	 * 
+	 * 将类文件的字节clsByte通过方法defineClass加载到JVM中，并缓存到classCache。
 	 * @param className
 	 * @param clsByte
 	 * @return
@@ -203,7 +200,7 @@ public class DynamicClassLoader extends SecureClassLoader {
 	
 	/**
 	 * add folder jars
-	 * @param path
+	 * @param dirs
 	 * @throws IOException 
 	 */
 	public void addFolder(String... dirs) throws IOException {

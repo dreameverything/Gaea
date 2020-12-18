@@ -22,7 +22,7 @@ package com.bj58.spat.gaea.protocol.compress;
 
 /**
  * SevenZip
- * 
+ * TODO renjia 尚未实现该压缩算法
  * @author Service Platform Architecture Team (spat@58.com)
  */
 class SevenZip extends CompressBase {

@@ -39,6 +39,14 @@ public class CreateManager {
 	
 	private static ILog logger = LogFactory.getLogger(CreateManager.class);
 
+	/**
+	 * 如果serviceframe.xml配置文件存在的话，从此文件中加载类。
+	 * 否则从参数serviceRootPath设定的位置中加载类。
+	 * @param serviceRootPath {GARA_ROOT}/service/deploy/{gaea.service.name}
+	 * @param classLoader 自定义的类加载器
+	 * @return
+	 * @throws Exception
+	 */
 	public IProxyFactory careteProxy(String serviceRootPath, DynamicClassLoader classLoader) throws Exception {
 		
 		String configPath = serviceRootPath + "/" + Constant.SERVICE_CONTRACT;

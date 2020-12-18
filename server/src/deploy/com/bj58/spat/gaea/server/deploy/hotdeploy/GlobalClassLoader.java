@@ -75,6 +75,10 @@ public class GlobalClassLoader {
 	public static void addURL2SystemClassLoader(URL url) throws Exception {
 		try {
 			logger.info("append jar to classpath:" + url.toString());
+			/*
+			 这里是添加到了UrlClassLoader的成员变量Stack栈中，每次获取类时，先从Stack栈中
+			 获取POP路径，然后缓存到Map中。
+			 */
 			addURL.invoke(system, new Object[] { url });
 		} catch (Exception e) {
 			throw e;

@@ -21,7 +21,11 @@
 package com.bj58.spat.gaea.protocol.sfp.enumeration;
 
 /**
- * SerializeType
+ * <pre>
+ * 序列化协议
+ * 只实现了GAEABinary，参见创建协议的工厂类SerializeBase
+ * 其他协议尚未实现
+ * </pre>
  *
  * @author Service Platform Architecture Team (spat@58.com)
  */

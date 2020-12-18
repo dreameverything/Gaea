@@ -21,17 +21,28 @@
 package com.bj58.spat.gaea.protocol.compress;
 
 /**
- * UnCompress
+ * 不压缩
  * 
  * @author Service Platform Architecture Team (spat@58.com)
  */
 class UnCompress extends CompressBase {
-
+	/**
+	 * 不解压，直接返回原值
+	 * @param buffer
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	public byte[] unzip(byte[] buffer) throws Exception {
 		return buffer;
 	}
 
+	/**
+	 * 不压缩
+	 * @param buffer
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	public byte[] zip(byte[] buffer) throws Exception {
 		return buffer;

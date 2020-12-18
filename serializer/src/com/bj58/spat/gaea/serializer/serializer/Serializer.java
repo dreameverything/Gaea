@@ -96,15 +96,20 @@ public class Serializer {
         }
     }
 
-      /*
-     * @return  对象序列化后的字节数组
-     * @param   obj     要序列化的对象
+    /**
+     *
+     * @param buffer 要反序列化的字节数组
+     * @param type 序列化的类型，参见com.bj58.spat.gaea.protocol.sfp.enumeration.SDPType#getSDPClass(com.bj58.spat.gaea.protocol.sfp.enumeration.SDPType)
+     * @return 对象
+     * @throws Exception
      */
     public Object Derialize(byte[] buffer, Class type) throws Exception {
+        //继承自：ByteArrayInputStream
         GaeaInStream stream = null;
         try {
             stream = new GaeaInStream(buffer);
             stream.Encoder = _Encoder;
+            //这里貌似尚未实现
             if (ClassHelper.InterfaceOf(type, IGaeaSerializer.class)) {
                 IGaeaSerializer obj = (IGaeaSerializer) type.newInstance();
                 obj.Derialize(stream);

@@ -88,6 +88,8 @@ public class Main extends DynamicClassLoader {
 		}
 		
 		String serviceFolderPath = rootPath + "service/deploy/" + serviceName;
+		String serviceLibPath = rootPath + "service/lib";
+		String gaeaLibPath = rootPath + "lib";
 		String gaeaConfigDefaultPath = rootPath + "conf/gaea_config.xml";
 		String gaeaConfigPath = serviceFolderPath + "/gaea_config.xml";
 		String log4jConfigDefaultPath = rootPath + "conf/gaea_log4j.xml";
@@ -108,48 +110,48 @@ public class Main extends DynamicClassLoader {
 		
 		// load service config
 		logger.info("load service config...");
-		ServiceConfig sc = loadServiceConfig(gaeaConfigDefaultPath, gaeaConfigPath);
+		ServiceConfig serviceConfig = loadServiceConfig(gaeaConfigDefaultPath, gaeaConfigPath);
 		Set<String> keySet = argsMap.keySet();
 		for(String key : keySet) {
 			logger.info(key + ": " + argsMap.get(key));
-			sc.set(key, argsMap.get(key));
+			serviceConfig.set(key, argsMap.get(key));
 		}
-		if(sc.getString("gaea.service.name") == null || sc.getString("gaea.service.name").equalsIgnoreCase("")) {
+		if(serviceConfig.getString("gaea.service.name") == null || serviceConfig.getString("gaea.service.name").equalsIgnoreCase("")) {
 			logger.info("gaea.service.name:" + serviceName);
-			sc.set("gaea.service.name", serviceName);
+			serviceConfig.set("gaea.service.name", serviceName);
 		}
-		Global.getSingleton().setServiceConfig(sc);
-
-		
-		// init class loader
-		logger.info("-----------------loading global jars------------------");
+		Global.getSingleton().setServiceConfig(serviceConfig);
+		//初始化自定义的类加载器
+		logger.info("-----------------[begin]Init DynamicClassLoader to find all jars------------------");
+		//自定义类加载器，继承自SecureClassLoader
 		DynamicClassLoader classLoader = new DynamicClassLoader();
 		//找到各个目录中文件后缀为rar、jar、war、ear的文件路径
-		classLoader.addFolder(
-				rootPath + "service/deploy/" + sc.getString("gaea.service.name") + "/",
-				rootPath + "service/lib/",
-				rootPath + "lib"
-				);
-		logger.info( "需要动态加载的jar文件个数为："+DynamicClassLoader.jarList().size() );
-		GlobalClassLoader.addSystemClassPathFolder( DynamicClassLoader.jarList() );
-		logger.info("-------------------------end-------------------------\n");
+		classLoader.addFolder(serviceFolderPath,serviceLibPath,gaeaLibPath);
+		logger.info( "已找到的需加载（尚未加载进JVM）的jar文件个数为："+classLoader.getJarList().size() );
+		logger.info("-----------------[end]Init DynamicClassLoader finished------------------");
+
+		// init class loader
+		logger.info("-----------------[begin]Init GlobalClassLoader to load all jars to JVM------------------");
+		//将jar文件通过系统默认的类加载器添加到JVM中
+		GlobalClassLoader.addSystemClassPathFolder( classLoader.getJarList() );
+		logger.info("-------------------------[end]Init GlobalClassLoader finished-------------------------\n");
 
 		if(new File(serviceFolderPath).isDirectory() || !serviceName.equalsIgnoreCase("error_service_name_is_null")) {
 			// load proxy factory
-			logger.info("--------------------loading proxys-------------------");
+			logger.info("--------------------[begin]loading proxys-------------------");
 			IProxyFactory proxyFactory = ProxyFactoryLoader.loadProxyFactory(classLoader);
 			Global.getSingleton().setProxyFactory(proxyFactory);
-			logger.info("-------------------------end-------------------------\n");
+			logger.info("-------------------------[end]loaded proxys-------------------------\n");
 			
 			// load init beans
-			logger.info("-----------------loading init beans------------------");
-			loadInitBeans(classLoader, sc);
-			logger.info("-------------------------end-------------------------\n");
+			logger.info("-----------------[begin]loading gaea.init beans------------------");
+			loadInitBeans(classLoader, serviceConfig);
+			logger.info("-------------------------[end]loaded gaea.init beans-------------------------\n");
 		}
 		
 		// load global request-filters
 		logger.info("-----------loading global request filters------------");
-		List<IFilter> requestFilters = loadFilters(classLoader, sc, "gaea.filter.global.request");
+		List<IFilter> requestFilters = loadFilters(classLoader, serviceConfig, "gaea.filter.global.request");
 		for(IFilter filter : requestFilters) {
 			Global.getSingleton().addGlobalRequestFilter(filter);
 		}
@@ -157,7 +159,7 @@ public class Main extends DynamicClassLoader {
 		
 		// load global response-filters
 		logger.info("-----------loading global response filters-----------");
-		List<IFilter> responseFilters = loadFilters(classLoader, sc, "gaea.filter.global.response");
+		List<IFilter> responseFilters = loadFilters(classLoader, serviceConfig, "gaea.filter.global.response");
 		for(IFilter filter : responseFilters) {
 			Global.getSingleton().addGlobalResponseFilter(filter);
 		}
@@ -165,7 +167,7 @@ public class Main extends DynamicClassLoader {
 		
 		// load connection filters
 		logger.info("-----------loading connection filters-----------");
-		List<IFilter> connFilters = loadFilters(classLoader, sc, "gaea.filter.connection");
+		List<IFilter> connFilters = loadFilters(classLoader, serviceConfig, "gaea.filter.connection");
 		for(IFilter filter : connFilters) {
 			Global.getSingleton().addConnectionFilter(filter);
 		}
@@ -173,9 +175,9 @@ public class Main extends DynamicClassLoader {
 		
 		// load secureKey 当gaea.secure不为true时不启动权限认证
 		logger.info("------------------load secureKey start---------------------");
-		if(sc.getString("gaea.secure") != null && "true".equalsIgnoreCase(sc.getString("gaea.secure"))) {
-			logger.info("gaea.secure:" + sc.getString("gaea.secure"));
-			loadSecureKey(sc,serviceFolderPath);
+		if(serviceConfig.getString("gaea.secure") != null && "true".equalsIgnoreCase(serviceConfig.getString("gaea.secure"))) {
+			logger.info("gaea.secure:" + serviceConfig.getString("gaea.secure"));
+			loadSecureKey(serviceConfig,serviceFolderPath);
 		}
 		logger.info("------------------load secureKey end----------------------\n");
 		
@@ -191,16 +193,16 @@ public class Main extends DynamicClassLoader {
 		
 		// load servers
 		logger.info("------------------ starting servers -----------------");
-		loadServers(classLoader, sc);
+		loadServers(classLoader, serviceConfig);
 		logger.info("-------------------------end-------------------------\n");
 		
 		// add current service file to monitor
-		if(sc.getBoolean("gaea.hotdeploy")) {
-			logger.info("------------------[begin]init file monitor-----------------");
-			addFileMonitor(rootPath, sc.getString("gaea.service.name"));
+		if(serviceConfig.getBoolean("gaea.hotdeploy")) {
+			logger.info("------------------[begin]init file monitor(gaea.hotdeploy is enable)-----------------");
+			addFileMonitor(rootPath, serviceConfig.getString("gaea.service.name"));
 			logger.info("-------------------------[end]init file monitor-------------------------\n");
 		}
-		
+
 		try {
 			registerExcetEven();
 		} catch (Exception e) {
@@ -247,7 +249,8 @@ public class Main extends DynamicClassLoader {
 	}
 	
 	/**
-	 * 
+	 * 初始化Bean是在配置文件的gaea.init中配置的，
+	 * 可以配置多个Bean，以逗号分隔。
 	 * @param classLoader
 	 * @param sc
 	 * @throws Exception
@@ -318,12 +321,16 @@ public class Main extends DynamicClassLoader {
 	 * @throws Exception
 	 */
 	private static void loadServers(DynamicClassLoader classLoader, ServiceConfig sc) throws Exception {
+		//gaea.servers默认值是gaea.server.tcp , gaea.server.http,gaea.server.telnet
 		List<String> servers = sc.getList("gaea.servers", ",");
 		if(servers != null) {
 			for(String server : servers) {
 				try {
 					if(sc.getBoolean(server + ".enable")) {
 						logger.info(server + " is starting...");
+						//gaea.server.tcp.implement    = com.bj58.spat.gaea.server.core.communication.tcp.SocketServer
+						//gaea.server.telnet.implement = com.bj58.spat.gaea.server.core.communication.telnet.TelnetServer
+						//gaea.server.http.implement   = com.bj58.spat.gaea.server.core.communication.http.HttpServer
 						IServer serverImpl = (IServer) classLoader.loadClass(sc.getString(server + ".implement")).newInstance();
 						Global.getSingleton().addServer(serverImpl);
 						serverImpl.start();
