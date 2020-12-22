@@ -21,7 +21,11 @@
 package com.bj58.spat.gaea.server.contract.context;
 
 /**
- * StringUtils
+ * 用来控制Filter的使用范围。
+ * All表示任何场合都可以使用，比如request阶段、response阶段、connected阶段等。
+ * RequestOnly表示只有在request阶段才能使用。
+ * ResponseOnly表示只有在response阶段才能使用。
+ * None表示任何场合都不能使用，相当于关闭。
  * 
  * @author Service Platform Architecture Team (spat@58.com)
  */

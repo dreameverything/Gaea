@@ -48,23 +48,39 @@ import com.bj58.spat.gaea.serializer.serializer.Serializer;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 class ClassScaner {
+    /**
+     * 当前线程的ClassLoader是AppClassLoader
+     */
     private ClassLoader cl = Thread.currentThread().getContextClassLoader();
     //类文件中包含的关键字
     private final String KEY_WORD = "GaeaSerializable";
 
-    public Set<Class> scan(String... basePackages) throws URISyntaxException, IOException, ClassNotFoundException {
+    /**
+     *
+     * @param basePackages
+     * @return
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public Set<Class> scanGaeaSerializableClass(String... basePackages) throws URISyntaxException, IOException, ClassNotFoundException {
         Set<Class> classes = new LinkedHashSet<Class>();
+        //如果gaea.serializer.basepakage中设置了路径
         if (basePackages != null && basePackages.length > 0 && (!StrHelper.isEmptyOrNull(basePackages[0]))) {
             for (String pack : basePackages) {
                 classes.addAll(scanByPakage(pack));
             }
-        } else if (Serializer.JarPath != null && Serializer.JarPath.length > 0) {
+        }
+        //如果JarPath设置了路径，这个方法已经被抛弃了
+        else if (Serializer.JarPath != null && Serializer.JarPath.length > 0) {
             System.err.println("指定JarPath路径扫描Jar包模式已经过时，请在启动vm参数中设置gaea.serializer.basepakage。");
             for (String path : Serializer.JarPath) {
                 classes.addAll(scanByJarPath(path));
             }
-        } else {
-            System.err.println("开始扫描全部引用jar包，如果扫描过程过长请在启动vm参数中设置gaea.serializer.basepakage或者设置gaea.serializer.scantype=asyn使用异步模式扫描。");
+        }
+        //其他的扫描方式
+        else {
+            System.err.println("开始扫描AppClassLoader引用的所有jar包、目录，找到包含GaeaSerializable的类文件到缓存中。如果扫描过程过长请在启动vm参数中设置gaea.serializer.basepakage或者设置gaea.serializer.scantype=asyn使用异步模式扫描。");
             classes.addAll(scanByURLClassLoader());
             if (classes.size() == 0) {
                 classes.addAll(scanByJarPath(ClassHelper.getJarPath(ClassScaner.class)));
@@ -74,8 +90,8 @@ class ClassScaner {
     }
 
     /**
-     * 从包package中获取所有的Class
-     * @param pack
+     * 从指定的package包中获取包含GaeaSerializable的Class类
+     * @param pack package包
      * @return
      */
     public Set<Class> scanByPakage(String pack) throws URISyntaxException, MalformedURLException, FileNotFoundException, ClassNotFoundException {
@@ -126,6 +142,13 @@ class ClassScaner {
         return classes;
     }
 
+    /**
+     * 找到所有的jar、文件夹下的包含GaeaSerializable的类文件。
+     * @return
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     private Set<Class> scanByURLClassLoader() throws URISyntaxException, IOException, ClassNotFoundException {
         Set<Class> classes = new LinkedHashSet<Class>();
         URL[] urlAry = ((URLClassLoader) Thread.currentThread().getContextClassLoader()).getURLs();
@@ -142,6 +165,17 @@ class ClassScaner {
         return classes;
     }
 
+    /**
+     * 找到类文件中包含GaeaSerializable的类，加入到参数classes中
+     * @param url
+     * @param basePak
+     * @param classes
+     * @throws MalformedURLException
+     * @throws URISyntaxException
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     private void getClassFromURL(URL url, String basePak, Set<Class> classes) throws MalformedURLException, URISyntaxException, FileNotFoundException, IOException, ClassNotFoundException {
         if(url == null) {
         	System.err.println("url is null when getClassFromURL");
@@ -157,13 +191,13 @@ class ClassScaner {
         if (f.isDirectory()) {
             List<File> files = FileHelper.getFiles(f.getAbsolutePath(), "class");
             for (File file : files) {
-                Class c = getClassFromFile(file, url, basePak);
+                Class c = getClassFromFile(file, url, basePak); //文件中必须包含GaeaSerializable
                 if (c != null) {
                     classes.add(c);
                 }
             }
         } else if (f.getName().endsWith(".class")) {
-            Class c = getClassFromFile(f, url, basePak);
+            Class c = getClassFromFile(f, url, basePak); //文件中必须包含GaeaSerializable
             if (c != null) {
                 classes.add(c);
             }

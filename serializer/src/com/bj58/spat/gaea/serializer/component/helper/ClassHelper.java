@@ -89,7 +89,7 @@ public class ClassHelper {
         String packageName = basePakage;
         String packageDirName = basePakage.replace('.', '/');
         Enumeration<JarEntry> entries = jarFile.entries();
-        Set<Class> classes = new LinkedHashSet<Class>();
+        Set<Class> classes = new LinkedHashSet<Class>(); //去重
         while (entries.hasMoreElements()) {
             try {
                 // 获取jar里的一个实体 可以是目录 和一些jar包里的其他文件 如META-INF等文件
@@ -121,7 +121,7 @@ public class ClassHelper {
                             String className = name.substring(
                                     packageName.length() + 1, name.length() - 6);
                             try {
-                                // 添加到classes
+                                // 当前线程的类加载器是AppClassLoader，加载类（如果已经加载了直接返回该）
                                 Class c = Thread.currentThread().getContextClassLoader().loadClass(packageName + "." + className);
                                 classes.add(c);
                             } catch (ClassNotFoundException e) {
@@ -139,6 +139,14 @@ public class ClassHelper {
         return classes;
     }
 
+    /**
+     * 检查jar包jarFile中的entry文件中是否包含字符串keyWord
+     * @param jarFile jar包
+     * @param entry jar包中的文件
+     * @param keyWord 要查找的关键字
+     * @return true存在关键字；false不存在关键字
+     * @throws IOException
+     */
     public static boolean checkJarEntry(JarFile jarFile, JarEntry entry, String keyWord) throws IOException {
         if (keyWord == null || keyWord.equals("")) {
             return true;

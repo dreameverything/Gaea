@@ -61,6 +61,9 @@ public class SocketServer implements IServer {
 	
 	/**
 	 * invoker handle
+	 * 包括两类：异步和同步
+	 * 异步（默认的配置）：com.bj58.spat.gaea.server.core.proxy.AsyncInvokerHandle
+	 * 同步：com.bj58.spat.gaea.server.core.proxy.SyncInvokerHandle
 	 */
 	static IInvokerHandle invokerHandle = null;
 	
@@ -69,11 +72,12 @@ public class SocketServer implements IServer {
 	 */
 	@Override
 	public void start() throws Exception {
-		logger.info("loading invoker...");
+
 		//gaea.proxy.invoker.implement的默认值是：com.bj58.spat.gaea.server.core.proxy.AsyncInvokerHandle
 		String invoker = Global.getSingleton().getServiceConfig().getString("gaea.proxy.invoker.implement");
+		logger.info("Loading invoker and create instance : " + invoker);
 		invokerHandle = (IInvokerHandle) Class.forName(invoker).newInstance();
-		logger.info("initing server...");
+		logger.info("Initing server...");
 		initSocketServer();
 	}
 	

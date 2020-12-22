@@ -55,11 +55,10 @@ public abstract class InvokerBase implements IInvokerHandle {
 	void doInvoke(GaeaContext context) {
 		logger.debug("------------------------------ begin request-----------------------------");
 
-		StringBuffer sbInvokerMsg = new StringBuffer();
+		StringBuilder sbInvokerMsg = new StringBuilder();
 		StopWatch sw = context.getStopWatch();
 		Object response = null;
-		Protocol protocol = null;
-		protocol = context.getGaeaRequest().getProtocol();
+		Protocol protocol = context.getGaeaRequest().getProtocol();
 		RequestProtocol request = (RequestProtocol) protocol.getSdpEntity();
 
 		try {
@@ -109,7 +108,7 @@ public abstract class InvokerBase implements IInvokerHandle {
 				sw.setFromIP(context.getChannel().getRemoteIP());
 				sw.setLocalIP(context.getChannel().getLocalIP());
 
-				// invoker real service
+				// invoke real service
 				GaeaResponse gaeaResponse = localProxy.invoke(context);
 
 				sw.stop(swInvoderKey);
