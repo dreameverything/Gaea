@@ -28,16 +28,18 @@ import com.bj58.spat.gaea.serializer.serializer.Serializer;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 class GaeaSerialize extends SerializeBase {
-
-    private static final Serializer serializer = new Serializer();
+    /**
+     * 初始化Serializer，改类包含了Gaea序列化支持的所有的类型和自定义的Class类型
+     */
+    private static final Serializer SERIALIZER = new Serializer();
 
     @Override
     public byte[] serialize(Object obj) throws Exception {
-        return serializer.Serialize(obj);
+        return SERIALIZER.Serialize(obj);
     }
 
     @Override
     public Object deserialize(byte[] data, Class<?> cls) throws Exception {
-        return serializer.Derialize(data, cls);
+        return SERIALIZER.Derialize(data, cls);
     }
 }

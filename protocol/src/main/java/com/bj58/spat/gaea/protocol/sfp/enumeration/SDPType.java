@@ -84,7 +84,14 @@ public enum SDPType {
 	}
 	
 	/**
-	 * 
+	 * <pre>
+	 * 获取 SDPType 对应的class类，对应关系如下：
+	 *     SDPType.Request   > RequestProtocol.class
+	 *     SDPType.Response  > ResponseProtocol.class
+	 *     SDPType.Exception > ExceptionProtocol.class
+	 *     SDPType.Handclasp > HandclaspProtocol.class
+	 *     SDPType.Reset     > ResetProtocol.class
+	 * </pre>
 	 * @param type
 	 * @return
 	 * @throws Exception

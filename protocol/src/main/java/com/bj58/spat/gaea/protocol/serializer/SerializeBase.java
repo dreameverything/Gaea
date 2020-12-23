@@ -58,5 +58,19 @@ public abstract class SerializeBase {
     
     public abstract byte[] serialize(Object obj) throws Exception;
 
+    /**
+     * <pre>
+     * 参数cls的类型(参考类com.bj58.spat.gaea.protocol.sfp.enumeration.SDPType)如下：
+     * RequestProtocol.class
+     * ResponseProtocol.class
+     * ExceptionProtocol.class
+     * HandclaspProtocol.class
+     * ResetProtocol.class
+     * </pre>
+     * @param data
+     * @param cls 为参数data字节数组所表示的Class类。
+     * @return
+     * @throws Exception
+     */
     public abstract Object deserialize(byte[] data, Class<?> cls) throws Exception;
 }

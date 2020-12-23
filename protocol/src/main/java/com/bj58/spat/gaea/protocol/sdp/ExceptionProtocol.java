@@ -24,8 +24,10 @@ import com.bj58.spat.gaea.serializer.component.annotation.GaeaMember;
 import com.bj58.spat.gaea.serializer.component.annotation.GaeaSerializable;
 
 /**
- * ExceptionProtocol
- *
+ * <pre>
+ * ExceptionProtocol包含GaeaSerializable注解，注解的name为"ExceptionProtocol",
+ * 会被com.bj58.spat.gaea.serializer.component.TypeMap作为自定义的类型加载到内存中。
+ * </pre>
  * @author Service Platform Architecture Team (spat@58.com)
  */
 @GaeaSerializable(name = "ExceptionProtocol")

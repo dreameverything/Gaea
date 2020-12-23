@@ -27,17 +27,29 @@ import com.bj58.spat.gaea.serializer.component.annotation.GaeaMember;
 import com.bj58.spat.gaea.serializer.component.annotation.GaeaSerializable;
 
 /**
- * RequestProtocol
- * 
+ * <pre>
+ * RequestProtocol包含GaeaSerializable注解，注解的name为"RequestProtocol",
+ * 会被com.bj58.spat.gaea.serializer.component.TypeMap作为自定义的类型加载到内存中。
+ *
+ * 包名sdp = Simple Data Protocol ，即：简单的数据协议
+ * </pre>
  * @author Service Platform Architecture Team (spat@58.com)
  */
 @GaeaSerializable(name = "RequestProtocol")
 public class RequestProtocol {
-
+	/**
+	 * 要找的代理类
+	 */
 	@GaeaMember
 	private String lookup;
+	/**
+	 * 要调用的方法名称
+	 */
 	@GaeaMember
 	private String methodName;
+	/**
+	 * 参数列表
+	 */
 	@GaeaMember
 	private List<KeyValuePair> paraKVList;
 
