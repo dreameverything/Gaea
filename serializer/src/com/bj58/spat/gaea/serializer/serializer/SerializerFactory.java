@@ -43,8 +43,10 @@ import com.bj58.spat.gaea.serializer.serializer.SerializerBase;
 import com.bj58.spat.gaea.serializer.serializer.StringSerializer;
 
 /**
- * SerializerFactory
- * 
+ * <pre>
+ * SerializerFactory序列化工厂类
+ *
+ * </pre>
  * @author Service Platform Architecture Team (spat@58.com)
  */
 class SerializerFactory {
@@ -68,6 +70,13 @@ class SerializerFactory {
     private final static SerializerBase objectSerializer = new ObjectSerializer();
     private final static SerializerBase stringSerializer = new StringSerializer();
 
+    /**
+     * 根据type获取到对应的序列化类
+     * @param type
+     * @return
+     * @throws ClassNotFoundException
+     * @throws DisallowedSerializeException
+     */
     public static SerializerBase GetSerializer(Class<?> type) throws ClassNotFoundException, DisallowedSerializeException {
         if (type == null) {
             return nullSerializer;
@@ -77,11 +86,11 @@ class SerializerFactory {
         int typeId = TypeHelper.GetTypeId(type);
         SerializerBase serializer = null;
         switch (typeId) {
-            case 0:
-            case 1:
+            case 0://未知
+            case 1://DBNull
                 serializer = nullSerializer;
                 break;
-            case 2:
+            case 2://Object
                 serializer = objectSerializer;
                 break;
             case 3:
@@ -90,23 +99,23 @@ class SerializerFactory {
             case 4:
                 serializer = charSerializer;
                 break;
-            case 5:
-            case 6:
+            case 5://Byte
+            case 6://之前的版本有6，这里空出来是为了兼容旧版本
                 serializer = byteSerializer;
                 break;
-            case 7:
-            case 8:
+            case 7://Short
+            case 8://未知
                 serializer = int16Serializer;
                 break;
-            case 9:
-            case 10:
+            case 9://Integer
+            case 10://未知
                 serializer = int32Serializer;
                 break;
-            case 11:
-            case 12:
+            case 11://Long
+            case 12://未知
                 serializer = int64Serializer;
                 break;
-            case 13:
+            case 13://Float
                 serializer = floatSerializer;
                 break;
             case 14:
@@ -115,29 +124,29 @@ class SerializerFactory {
             case 15:
                 serializer = decimalSerializer;
                 break;
-            case 16:
+            case 16://Date, java.sql.Date, java.sql.Time, java.sql.Timestamp
                 serializer = dateTimeSerializer;
                 break;
             case 18:
                 serializer = stringSerializer;
                 break;
-            case 19:
-            case 20:
-            case 21:
+            case 19://List
+            case 20://之前的版本有20，这里空出来是为了兼容旧版本
+            case 21://之前的版本有21，这里空出来是为了兼容旧版本
                 serializer = listSerializer;
                 break;
-            case 22:
+            case 22://GKeyValuePair
                 serializer = keyValueSerializer;
                 break;
             case 23:
                 serializer = arraySerializer;
                 break;
-            case 24:
-            case 25:
+            case 24://Map
+            case 25://之前的版本有25，这里空出来是为了兼容旧版本
                 serializer = mapSerializer;
                 break;
             default:
-                serializer = objectSerializer;
+                serializer = objectSerializer; //自定义的序列化类（例如:RequestProtocol、ResponseProtocol等）
         }
         return serializer;
     }

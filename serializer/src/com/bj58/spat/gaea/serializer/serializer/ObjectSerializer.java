@@ -40,11 +40,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ObjectSerializer
- * 
+ * <pre>
+ *     ObjectSerializer
+ *     已经支持服务器端增加字段客户端不需要更新功能。
+ * </pre>
  * @author Service Platform Architecture Team (spat@58.com)
  */
-class ObjectSerializer extends SerializerBase {
+public class ObjectSerializer extends SerializerBase {
 
     @Override
     public void WriteObject(Object obj, GaeaOutStream outStream) throws Exception {
@@ -74,8 +76,22 @@ class ObjectSerializer extends SerializerBase {
         }
     }
 
+    /**
+     * <pre>
+     * 参数inStream中包含了要反序列化的字节序列buffer
+     * 参数defType是要反序列化的类型，可以是系统默认的，也可以是自定义的。
+     * inStream的数据结构：
+     *    4bytes      |  1byte    |    4bytes        |   4bytes      | 1byte  |
+     * 整个数据的类型  |   isRef   |   ref hashcode   |  参数[1]的类型  | isRef |
+     * </pre>
+     * @param inStream
+     * @param defType
+     * @return
+     * @throws Exception
+     */
     @Override
     public Object ReadObject(GaeaInStream inStream, Class defType) throws Exception {
+        //读取4 bytes
         int typeId = inStream.ReadInt32();
         if (typeId == 0) {
             return null;
@@ -87,14 +103,18 @@ class ObjectSerializer extends SerializerBase {
         if (!defType.isAssignableFrom(type) && defType != type) {
             throw new ClassNoMatchException("Class not match!class:" + type.getName() + ",require " + defType.getName());
         }
+        //读取1 byte
         byte isRef = (byte) inStream.read();
+        //读取4 byte
         int hashcode = inStream.ReadInt32();
         if (isRef > 0) {
             return inStream.GetRef(hashcode);
         }
         TypeInfo typeInfo = GetTypeInfo(type);
         Object obj = type.newInstance();
+        //这里的Fields必须是按照hashcode值从小到大排序，这样才能对应上
         for (Field f : typeInfo.Fields) {
+            //继续读取4 bytes
             int ptypeId = inStream.ReadInt32();
             if (ptypeId == 0) {
                 f.set(obj, null);
@@ -104,6 +124,7 @@ class ObjectSerializer extends SerializerBase {
             if (ptype == null) {
                 throw new ClassNotFoundException("Cannot find class with typId,target class: " + f.getType().getName() + ",typeId:" + ptypeId);
             }
+            //TODO renjia IGaeaSerializer接口尚未实现
             if (IGaeaSerializer.class.isAssignableFrom(ptype)) {
                 IGaeaSerializer value = (IGaeaSerializer) ptype.newInstance();
                 value.Derialize(inStream);
@@ -113,10 +134,15 @@ class ObjectSerializer extends SerializerBase {
                 f.set(obj, value);
             }
         }
+        //TODO renjia 这里不会撑爆吗？
         inStream.SetRef(hashcode, obj);
         return obj;
     }
     private static Map<Class<?>, TypeInfo> TypeInfoMap = new HashMap<Class<?>, TypeInfo>();
+
+    public static final Map<Class<?>, TypeInfo> getTypeInfoMap(){
+        return TypeInfoMap;
+    }
 
     private TypeInfo GetTypeInfo(Class<?> type) throws ClassNotFoundException, DisallowedSerializeException {
         if (TypeInfoMap.containsKey(type)) {
@@ -141,7 +167,7 @@ class ObjectSerializer extends SerializerBase {
             }
             temType = superClass;
         }
-
+        //建立Field的索引，key是根据Field的名称计算出来的hashcode
         Map<Integer, Field> mapFildes = new HashMap<Integer, Field>();
         List<Integer> indexIds = new ArrayList<Integer>();
         if (cAnn.defaultAll()) {
@@ -150,6 +176,7 @@ class ObjectSerializer extends SerializerBase {
                 if (ann != null) {
                     continue;
                 }
+                //允许在用反射时访问私有变量
                 f.setAccessible(true);
                 Integer indexId = StrHelper.GetHashcode(f.getName().toLowerCase());
                 mapFildes.put(indexId, f);
@@ -161,6 +188,7 @@ class ObjectSerializer extends SerializerBase {
                 if (ann == null) {
                     continue;
                 }
+                //允许在用反射时访问私有变量
                 f.setAccessible(true);
                 String name = ann.name();
 
@@ -180,16 +208,18 @@ class ObjectSerializer extends SerializerBase {
                 indexIds.add(indexId);
             }
         }
+        //从小到大的顺序排序
         int len = indexIds.size();
         for (int i = 0; i < len; i++) {
             for (int j = i + 1; j < len; j++) {
                 Integer item = indexIds.get(j);
-                if (indexIds.get(i) > item) {
+                if (indexIds.get(i).intValue() > item.intValue()) {
                     indexIds.set(j, indexIds.get(i));
                     indexIds.set(i, item);
                 }
             }
         }
+        //按index从小到大的顺序添加Field
         for (Integer index : indexIds) {
             typeInfo.Fields.add(mapFildes.get(index));
         }

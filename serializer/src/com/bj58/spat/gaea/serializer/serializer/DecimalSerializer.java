@@ -38,6 +38,16 @@ class DecimalSerializer extends SerializerBase {
 		SerializerFactory.GetSerializer(String.class).WriteObject(obj.toString(), outStream);
 	}
 
+	/**
+	 * <pre>
+	 *     BigDecimal传输过程中是转换成字符串了
+	 *
+	 * </pre>
+	 * @param inStream 包含了Netty中解析出来的字节数组
+	 * @param defType 字节数组对应的类型
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	public Object ReadObject(GaeaInStream inStream, Class defType) throws Exception {
 		Object value = SerializerFactory.GetSerializer(String.class).ReadObject(inStream, String.class);

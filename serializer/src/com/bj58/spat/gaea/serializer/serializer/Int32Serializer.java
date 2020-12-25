@@ -36,6 +36,12 @@ class Int32Serializer extends SerializerBase {
         outStream.WriteInt32((Integer) obj);
     }
 
+    /**
+     * @param inStream 包含了Netty中解析出来的字节数组
+     * @param defType 字节数组对应的类型
+     * @return
+     * @throws Exception
+     */
     @Override
     public Object ReadObject(GaeaInStream inStream, Class defType) throws Exception {
         return inStream.ReadInt32();

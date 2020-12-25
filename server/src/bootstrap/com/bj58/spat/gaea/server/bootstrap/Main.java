@@ -26,6 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import com.bj58.spat.gaea.serializer.serializer.ObjectSerializer;
 import sun.misc.Signal;
 
 import com.bj58.spat.gaea.server.bootstrap.signal.OperateSignal;
@@ -54,7 +59,9 @@ import com.bj58.spat.gaea.server.deploy.hotdeploy.ProxyFactoryLoader;
 public class Main extends DynamicClassLoader {
 
 	private static ILog logger = null;
-	
+
+	private static ExecutorService executorService = Executors.newSingleThreadExecutor();
+
 	/**
 	 * start server
 	 * @param args : service name
@@ -209,14 +216,34 @@ public class Main extends DynamicClassLoader {
 			logger.error("registerExcetEven error", e);
 			System.exit(0);
 		}
-		
+
+		//启动监控内存数据的线程
+		try {
+			monitorCacheData();
+		} catch (Exception e){
+			logger.warn(e.getMessage() , e);
+		}
+
 		logger.info("+++++++++++++++++++++ server start success!!! +++++++++++++++++++++\n");
 		while (true) {
 			Thread.sleep(1 * 60 * 60 * 1000);
 		}
 	}
 	
-	
+	private static void monitorCacheData(){
+		executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println(" 系统内存数据监控( 每隔30秒一次 ) ");
+				System.out.println(" ObjectSerializer.TypeInfoMap().size = " + ObjectSerializer.getTypeInfoMap().size() );
+				System.out.println(" 系统内存数据监控结束");
+				try {
+					TimeUnit.SECONDS.sleep(30);
+				} catch (InterruptedException e) {
+				}
+			}
+		});
+	}
 	/**
 	 * load service config
 	 * @param cps

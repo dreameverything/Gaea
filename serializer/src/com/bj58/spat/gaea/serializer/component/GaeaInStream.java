@@ -38,6 +38,9 @@ public class GaeaInStream extends ByteArrayInputStream {
 
     public final int MAX_DATA_LEN = 1024 * 1024 * 10;
     public Charset Encoder = Charset.forName("UTF-8");
+    /**
+     * 缓存了hashcode和引用之间的关系
+     */
     private Map<Integer, Object> _RefPool = new HashMap<Integer, Object>();
 
     public GaeaInStream(byte[] buffer) {
@@ -73,6 +76,12 @@ public class GaeaInStream extends ByteArrayInputStream {
         return ByteHelper.ToInt16(buffer);
     }
 
+    /**
+     * 读取4个字节并转为int类型。
+     * 转换为int的字节顺序为：byte[3]byte[2]byte[1]byte[0]
+     * @return
+     * @throws Exception
+     */
     public int ReadInt32() throws Exception {
         byte[] buffer = new byte[4];
         if (this.read(buffer) != 4) {

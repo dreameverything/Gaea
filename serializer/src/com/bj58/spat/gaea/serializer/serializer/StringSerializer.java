@@ -51,7 +51,9 @@ class StringSerializer extends SerializerBase {
 
     @Override
     public Object ReadObject(GaeaInStream inStream, Class defType) throws Exception {
+        //获取1个字节isRef
         int isRef = (byte) inStream.read();
+        //继续读取4个字节
         int hashcode = inStream.ReadInt32();
         if (isRef > 0) {
             Object obj = inStream.GetRef(hashcode);
@@ -60,6 +62,7 @@ class StringSerializer extends SerializerBase {
             }
             return obj;
         }
+        //获取字节的长度
         int len = inStream.ReadInt32();
         if (len > inStream.MAX_DATA_LEN) {
             throw new StreamException("Data length overflow.");
@@ -69,8 +72,10 @@ class StringSerializer extends SerializerBase {
             return StrHelper.EmptyString;
         }
         byte[] buffer = new byte[len];
+        //读取到的字节的数量必须和buffer的相同，否则会抛出异常
         inStream.SafeRead(buffer);
         String str = new String(buffer, inStream.Encoder);
+        //TODO renjia
         inStream.SetRef(hashcode, str);
         return str;
     }

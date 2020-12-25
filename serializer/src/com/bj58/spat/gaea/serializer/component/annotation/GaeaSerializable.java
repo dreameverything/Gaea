@@ -38,5 +38,11 @@ public @interface GaeaSerializable {
 
     String name() default "";
 
+    /**
+     * 表明该注解标识的类中的字段是否默认都是可序列化的。
+     * 如果为true，则将类中所有的没有GaeaNotMember注解的字段都是可序列化的。
+     * 如果为false，则只是允许GaeaMember注解的字段才能序列化。
+     * @return
+     */
     boolean defaultAll() default false;
 }

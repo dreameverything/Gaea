@@ -29,6 +29,13 @@ import com.bj58.spat.gaea.serializer.serializer.IGaeaSerializer;
 import java.nio.charset.Charset;
 
 /**
+ * <pre>
+ *
+ * 全局参数gaea.init中默认配置有该类的初始化，这样在启动服务后就可以提前初始化好这些类。
+ * 有的在deploy目录下自行修改了gaea.init的配置，不执行本类的初始化，那么则是在序列化类
+ * com.bj58.spat.gaea.protocol.serializer.GaeaSerialize
+ * 中进行了初始化。
+ * </pre>
  * Serializer
  * 
  * @author Service Platform Architecture Team (spat@58.com)
@@ -97,7 +104,7 @@ public class Serializer {
     }
 
     /**
-     *
+     *如果type继承了IGaeaSerializer接口，则使用type自身的Derialize()方法进行反序列化。
      * @param buffer 要反序列化的字节数组
      * @param type 序列化的类型，参见com.bj58.spat.gaea.protocol.sfp.enumeration.SDPType#getSDPClass(com.bj58.spat.gaea.protocol.sfp.enumeration.SDPType)
      * @return 对象
@@ -109,7 +116,7 @@ public class Serializer {
         try {
             stream = new GaeaInStream(buffer);
             stream.Encoder = _Encoder;
-            //这里貌似尚未实现
+            //TODO renjia 这里尚未实现，接口IGaeaSerializer都没有实现类
             if (ClassHelper.InterfaceOf(type, IGaeaSerializer.class)) {
                 IGaeaSerializer obj = (IGaeaSerializer) type.newInstance();
                 obj.Derialize(stream);

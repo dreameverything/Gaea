@@ -94,7 +94,7 @@ class MapSerializer extends SerializerBase {
             throw new ClassNoMatchException("Class must be map!type:" + type.getName());
         }
         int modifier = defType.getModifiers();
-        if (!Modifier.isAbstract(modifier) && !Modifier.isInterface(modifier) && Map.class.isAssignableFrom(defType)) {
+        if (!Modifier.isAbstract(modifier) && !Modifier.isInterface(modifier) && Map.class.isAssignableFrom(defType)) { // 父类.isAssignableFrom(子类)
             type = defType;
         } else {
             type = HashMap.class; //default map type

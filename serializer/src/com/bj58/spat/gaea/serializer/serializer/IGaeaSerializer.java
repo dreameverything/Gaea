@@ -25,12 +25,19 @@ import com.bj58.spat.gaea.serializer.component.GaeaOutStream;
 
 /**
  * IGaeaSerializer
- * 
+ * TODO renjia 这个接口并没有实现类
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public interface IGaeaSerializer {
-
+    /**
+     * 对参数outStream进行序列化
+     * @param outStream
+     */
     void Serialize(GaeaOutStream outStream);
 
+    /**
+     * 对参数inStream进行反序列化
+     * @param inStream
+     */
     void Derialize(GaeaInStream inStream);
 }

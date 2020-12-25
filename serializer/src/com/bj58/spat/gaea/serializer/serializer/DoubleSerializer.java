@@ -25,7 +25,12 @@ import com.bj58.spat.gaea.serializer.component.GaeaOutStream;
 import com.bj58.spat.gaea.serializer.serializer.SerializerBase;
 
 /**
- * DoubleSerializer
+ * <pre>
+ *     DoubleSerializer
+ *     根据IEEE 754 floating-point "double format" bit的数据结构获取或者转换double类型
+ *
+ * </pre>
+ *
  * 
  * @author Service Platform Architecture Team (spat@58.com)
  */
