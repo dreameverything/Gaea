@@ -234,12 +234,14 @@ public class Main extends DynamicClassLoader {
 		executorService.execute(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println(" 系统内存数据监控( 每隔30秒一次 ) ");
-				System.out.println(" ObjectSerializer.TypeInfoMap().size = " + ObjectSerializer.getTypeInfoMap().size() );
-				System.out.println(" 系统内存数据监控结束");
-				try {
-					TimeUnit.SECONDS.sleep(30);
-				} catch (InterruptedException e) {
+				while( true ){
+					System.out.println(" 系统内存数据监控( 每隔30秒一次 ) ");
+					System.out.println(" ObjectSerializer.TypeInfoMap().size = " + ObjectSerializer.getTypeInfoMap().size() );
+					System.out.println(" 系统内存数据监控结束");
+					try {
+						TimeUnit.SECONDS.sleep(30);
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 		});

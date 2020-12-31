@@ -51,6 +51,7 @@ public class CreateManager {
 		
 		String configPath = serviceRootPath + "/" + Constant.SERVICE_CONTRACT;
 		File file = new File(configPath);
+		//RPC接口和实现类的对应关系
 		ContractInfo serviceContract = null;
 		
 		if (file != null && file.exists()) {
@@ -59,12 +60,12 @@ public class CreateManager {
 			serviceContract = ScanClass.getContractInfo(serviceRootPath + "/", classLoader);
 		}
 		
-		
+		//time用于创建代理类时用于生成类的名称
 		long time = System.currentTimeMillis();
 		List<ClassFile> localProxyList = new ProxyClassCreater().createProxy(classLoader, serviceContract, time);
-		logger.info("proxy class buffer creater finish!!!");
+		logger.info("Proxy Class buffer creater finish!!!");
 		ClassFile cfProxyFactory = new ProxyFactoryCreater().createProxy(classLoader, serviceContract, time);
-		logger.info("proxy factory buffer creater finish!!!");
+		logger.info("Proxy Factory buffer creater finish!!!");
 		
 		List<IProxyStub> localProxyAry = new ArrayList<IProxyStub>();
 		for(ClassFile cf : localProxyList) {

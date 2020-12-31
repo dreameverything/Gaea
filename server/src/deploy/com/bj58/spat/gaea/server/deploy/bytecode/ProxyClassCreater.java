@@ -40,7 +40,7 @@ import com.bj58.spat.gaea.server.deploy.hotdeploy.DynamicClassLoader;
 import com.bj58.spat.gaea.server.util.Util;
 
 /**
- * 
+ * TODO renjia 整个类的所有方法使用static更合适，不用new
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class ProxyClassCreater {
@@ -52,33 +52,43 @@ public class ProxyClassCreater {
 									   ContractInfo serviceContract, 
 									   long time) throws Exception {
 		
-		logger.info("loading dynamic proxy v1...");
+		logger.info("Loading dynamic proxy v1...");
 		List<ClassFile> clsList = new ArrayList<ClassFile>();
-		
+		//SessionBean中存放着接口和实现类的对应关系
 		for (ContractInfo.SessionBean sessionBean : serviceContract.getSessionBeanList()) {
-			if(sessionBean.getInterfaceClass() != null) {
-				Iterator it = sessionBean.getInstanceMap().entrySet().iterator();
-				while (it.hasNext()) {
+			ClassInfo interfaceClass = sessionBean.getInterfaceClass();
+			if(interfaceClass != null) {
+				Iterator it = sessionBean.getInstanceMap().entrySet().iterator(); // lookup --> implClassName
+				while (it.hasNext()) {//循环每个实现类
 					Map.Entry entry = (Map.Entry) it.next();
-					String lookup = entry.getKey().toString();
-					String implClassName = entry.getValue().toString();
-					String proxyClassName = lookup + "ProxyStub" + time;
-					logger.info("loading => " + proxyClassName);
-					logger.info("class name:" + implClassName);
-					
+					String lookup = entry.getKey().toString();           //实现类的lookUP
+					String implClassName = entry.getValue().toString();  //实现类的类名
+					String proxyClassName = lookup + "ProxyStub" + time; //代理类的类名 = `lookUP` + ProxyStub + `time`
+					logger.info("Loading ProxyClass Name: " + proxyClassName
+							  + ",ServiceImplClass name:" + implClassName
+							  + ",ServiceInterface name:" + interfaceClass.getCls().getName());
+					//ClassPool对象是一个CtClass对象的容器
 					ClassPool pool = ClassPool.getDefault();
 					
 					List<String> jarList = classLoader.getJarList();
 					for(String jar : jarList) {
 						pool.appendClassPath(jar);
 					}
-
+					//创建CtClass对象，它会被记录在ClassPool中,CtClass == Compile-Time Class
+					//proxyClassName是完整包名的类名，例如：com.kongzhong.Test，如果该类已经存在，则会替换之前的类。
+					//如果一个CtClass对象通过writeFile()，toClass()或者toBytecode()转换成了class文件，那么Javassist会冻结这个CtClass对象。
+					//这样是为了警告开发者不要修改已经被JVM加载的class文件，因为JVM不允许重新加载一个类。
+					//判断是否冻结ctClass.isFrozen()，解冻方法ctClass.defrost()，解冻之后可以再次被修改。
 					CtClass ctProxyClass = pool.makeClass(proxyClassName, null);
+
+					//如果ClassPool.doPruning被设置成true，那么Javassist会在冻结一个对象的时候对这个对象进行精简，
+					//这是为了减少ClassPool的内存占用，精简的时候会丢弃class中不需要的属性。
+					ctProxyClass.stopPruning(true);
+					//加载已经存在的接口com.bj58.spat.gaea.server.contract.context.IProxyStub
+					CtClass proxyStubInterface = pool.getCtClass(Constant.IPROXYSTUB_CLASS_NAME);
+					ctProxyClass.addInterface(proxyStubInterface);
 					
-					CtClass localProxy = pool.getCtClass(Constant.IPROXYSTUB_CLASS_NAME);
-					ctProxyClass.addInterface(localProxy);
-					
-					
+					//创建代理类的成员
 					CtField proxyField = CtField.make("private static " +
 														sessionBean.getInterfaceName() +
 														" serviceProxy = new " +
@@ -86,15 +96,15 @@ public class ProxyClassCreater {
 														"();", ctProxyClass);
 					ctProxyClass.addField(proxyField);
 
-					List<MethodInfo> methodList = sessionBean.getInterfaceClass().getMethodList();
+					List<MethodInfo> methodList = interfaceClass.getMethodList();
 					Method[] methodAry = new Method[methodList.size()];
 					for(int i=0; i<methodList.size(); i++) {
 						methodAry[i] = methodList.get(i).getMethod();
 					}
-					
-					List<String> uniqueNameList = new ArrayList<String>();
-					List<Method> uniqueMethodList = new ArrayList<Method>();
-					List<Method> allMethodList = new ArrayList<Method>();
+					//TODO renjia 去重为什么不用Set?
+					List<String> uniqueNameList = new ArrayList<String>();   //去重后的方法名列表
+					List<Method> uniqueMethodList = new ArrayList<Method>(); //去重后的方法列表
+					List<Method> allMethodList = new ArrayList<Method>();    //未去重的所有的方法列表
 					for (Method m : methodAry) {
 						if(Modifier.isPublic(m.getModifiers()) || Modifier.isProtected(m.getModifiers())){
 							if(!uniqueNameList.contains(m.getName())){
@@ -105,18 +115,19 @@ public class ProxyClassCreater {
 						}
 					}
 	
-					//method
+					//创建代理类的方法
+                    //TODO renjia 这里用唯一的方法名称，那重载的方法就不支持了？
 					for(Method m : uniqueMethodList) {
-						logger.debug("create method:" + m.getName());
+						logger.debug("Create service method of ProxyClass:" + m.getName());
 						String methodStr = createMethods(proxyClassName, m.getName(), allMethodList, uniqueNameList);
-						logger.debug("method("+m.getName()+") source code:"+methodStr);
+						logger.debug("Service method name of ProxyClass :"+m.getName()+" , source code:"+methodStr);
 						CtMethod methodItem = CtMethod.make(methodStr, ctProxyClass);
 						ctProxyClass.addMethod(methodItem);
 					}					
 					
 					//invoke
 					String invokeMethod = createInvoke(proxyClassName, uniqueNameList);
-					logger.debug("create invoke method:" + invokeMethod);
+					logger.debug("Create invoke method source code:" + invokeMethod);
 					CtMethod invoke = CtMethod.make(invokeMethod, ctProxyClass);
 					ctProxyClass.addMethod(invoke);
 	
@@ -124,7 +135,7 @@ public class ProxyClassCreater {
 				}
 			}
 		}
-		logger.info("load dynamic proxy success!!!");
+		logger.info("Load dynamic proxy v1 success!!!");
 		return clsList;
 	}
 	
@@ -160,14 +171,17 @@ public class ProxyClassCreater {
 	 */
 	public String createMethods(String className, String methodName, List<Method> methodList, List<String> uniqueNameList) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("public " + Constant.GAEARESPONSE_CLASS_NAME + " ");
+		sb.append("public " + Constant.GAEARESPONSE_CLASS_NAME + " "); //设置方法的返回值为：com.bj58.spat.gaea.server.contract.context.GaeaResponse
 		sb.append(methodName);
-		sb.append("(" + Constant.GAEACONTEXT_CLASS_NAME + " context) throws " + Constant.SERVICEFRAMEEXCEPTION_CLASS_NAME + " {");
-		
+		sb.append("(" + Constant.GAEACONTEXT_CLASS_NAME + " context) throws " + Constant.SERVICEFRAMEEXCEPTION_CLASS_NAME + " {"); //设置方法的参数为：com.bj58.spat.gaea.server.contract.context.GaeaContext
+        //com.bj58.spat.gaea.server.core.convert.ConvertFacotry根据从context中获取到的Protocol，并
+        //根据Protocol的SerializeType属性来得到com.bj58.spat.gaea.server.core.convert.IConvert
 		sb.append(Constant.ICONVERT_CLASS_NAME + " convert = " + Constant.CONVERT_FACTORY_CLASS_NAME + ".getConvert(context.getGaeaRequest().getProtocol());");
+		//从context中的Protocol中得到com.bj58.spat.gaea.protocol.sdp.RequestProtocol
 		sb.append(Constant.REQUEST_PROTOCOL_CLASS_NAME + " request = (" + Constant.REQUEST_PROTOCOL_CLASS_NAME + ")context.getGaeaRequest().getProtocol().getSdpEntity();");
+		//从request中到参数列表
 		sb.append("java.util.List listKV = request.getParaKVList();");
-		
+		//TODO renjia 从方法列表中找到方法，这个不能提前找到吗？
 		for(Method m : methodList){
 			if(m.getName().equalsIgnoreCase(methodName)){
 				
@@ -178,6 +192,7 @@ public class ProxyClassCreater {
 				for(int i=0; i<mGenericType.length; i++) {
 					String paraName = mGenericType[i].toString().replaceFirst("(class)|(interface) ", "");
 					paraName = paraName.replaceAll("java.util.", "").replaceAll("java.lang.", "");
+					//TODO renjia 这一段没看明白是要干啥？
 					if(paraName.startsWith(Constant.OUT_PARAM)){
 						paraName = paraName.replaceAll(Constant.OUT_PARAM+"<", "");
 						paraName = paraName.substring(0, paraName.length() - 1);
@@ -302,7 +317,7 @@ public class ProxyClassCreater {
 					if(paraName.trim().startsWith("[")){
 						paraName = mType[i].getCanonicalName();
 					}
-					
+					//去掉类型前的包名，例如：java.lang.Integer=>Integer，java.util.Date=>Date
 					String pn = paraName.replaceAll("java.util.", "").replaceAll("java.lang.", "");
 					if(!isOutPara){
 						if (pn.equalsIgnoreCase("String")

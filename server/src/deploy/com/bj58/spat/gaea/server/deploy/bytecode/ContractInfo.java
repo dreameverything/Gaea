@@ -24,11 +24,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 
+ * <pre>
+ * ContractInfo类中包含SessionBean的静态类定义
+ *
+ * </pre>
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class ContractInfo {
-
+	/**
+	 * 这里的SessionBean就是描述接口和实现类的对应关系
+	 */
 	private List<SessionBean> sessionBeanList;
 
 	public ContractInfo() {

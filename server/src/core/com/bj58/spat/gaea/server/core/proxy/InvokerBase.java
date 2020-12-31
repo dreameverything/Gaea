@@ -68,8 +68,8 @@ public abstract class InvokerBase implements IInvokerHandle {
 			sbInvokerMsg.append("\nfromIP:");
 			sbInvokerMsg.append(context.getChannel().getRemoteIP());
 			sbInvokerMsg.append("\nlookUP:");
-			sbInvokerMsg.append(request.getLookup());
-			sbInvokerMsg.append("\nmethodName:");
+			sbInvokerMsg.append(request.getLookup()); //例如：NewsService
+			sbInvokerMsg.append("\nmethodName:"); //例如：getNewsByCateID
 			sbInvokerMsg.append(request.getMethodName());
 			sbInvokerMsg.append("\nparams:");
 
@@ -89,11 +89,11 @@ public abstract class InvokerBase implements IInvokerHandle {
 			logger.debug(sbInvokerMsg.toString());
 			logger.debug("begin get proxy factory");
 
-			// get local proxy
+			// get local proxy , 例如：ProxyFactory1609126340091
 			IProxyStub localProxy = Global.getSingleton().getProxyFactory().getProxy(request.getLookup());
 			logger.debug("proxyFactory.getProxy finish");
 
-			if (localProxy == null) {
+			if (localProxy == null) { //例如：NewsServiceProxySub1609126340091
 				ServiceFrameException sfe = new ServiceFrameException("method:ProxyHandle.invoke--msg:" + request.getLookup() + "."
 						+ request.getMethodName() + " not fond", context.getChannel().getRemoteIP(), context.getChannel().getLocalIP(),
 						request, ErrorState.NotFoundServiceException, null);

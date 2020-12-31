@@ -28,18 +28,33 @@ import com.bj58.spat.gaea.server.contract.annotation.HttpPathParameter;
 import com.bj58.spat.gaea.server.contract.annotation.HttpRequestMapping;
 
 /**
+ * <pre>
  * GaeaBinaryConvert
- * 类的定义
+ * 类的定义，包括以ServiceContract注解标注的接口和以ServiceBehavior注解标注的Service实现类。
+ * 包含了类的方法和参数的静态定义类MethodInfo和ParamInfo
+ * ServiceContract注解如果defaultAll属性为true，则表示该接口以及所有父接口的方法都对外可以调用；否则，只是以注解OperationContract标注的方法才对外开放。
+ *
+ * 一个ClassInfo类包含一个MethodInfo的List列表，每个MethodInfo又包含一个ParamInfo数组，每个ParamInfo既包含了参数的名称，也包含了参数的值。
+ * </pre>
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class ClassInfo {
-
+	/**
+	 * 关联的Class类
+	 */
 	private Class<?> cls;
 	/**
 	 * 服务类中的方法定义列表
 	 */
 	private List<MethodInfo> methodList;
+	/**
+	 * 类型：类或者接口
+	 */
 	private ClassType classType;
+	/**
+	 * ServiceBehavior注解的Service实现类的名称
+	 * 默认使用cls.getSimpleName()
+	 */
 	private String lookUP;
 
 	public static class MethodInfo {
@@ -96,6 +111,15 @@ public class ClassInfo {
 
 		}
 
+		/**
+		 *
+		 * @param index 参数的索引，从0开始计数
+		 * @param cls 参数的Class
+		 * @param type 参数的Type
+		 * @param name 参数的名称
+		 * @param mapping Http相关
+		 * @param httpPathParameter Http相关
+		 */
 		public ParamInfo(int index, Class<?> cls, Type type, String name,
 				String mapping, HttpPathParameter httpPathParameter) {
 			super();

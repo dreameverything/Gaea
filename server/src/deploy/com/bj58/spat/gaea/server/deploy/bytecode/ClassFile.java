@@ -21,12 +21,17 @@
 package com.bj58.spat.gaea.server.deploy.bytecode;
 
 /**
- * 
+ * 字节码类文件
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class ClassFile {
-	
+	/**
+	 * 类的名称
+	 */
 	private String clsName;
+	/**
+	 * 类文件的字节数组
+	 */
 	private byte[] clsByte;
 	
 	

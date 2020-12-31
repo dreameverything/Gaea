@@ -36,7 +36,7 @@ import com.bj58.spat.gaea.server.contract.log.LogFactory;
 import com.bj58.spat.gaea.server.deploy.hotdeploy.DynamicClassLoader;
 
 /**
- * 
+ * TODO renjia 整个类的方法改为static更为合适
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class ProxyFactoryCreater {

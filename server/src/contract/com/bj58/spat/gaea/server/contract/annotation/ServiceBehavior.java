@@ -37,5 +37,10 @@ import com.bj58.spat.gaea.server.contract.annotation.AnnotationUtil;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ServiceBehavior {
+	/**
+	 * 通过lookUP设定的名称，可以找到代理类。如果注解没有设定looUP，即使用默认值AnnotationUtil.DEFAULT_VALUE，那么
+	 * 类的lookUP的值会默认为类的名称
+	 * @return
+	 */
 	public String lookUP() default AnnotationUtil.DEFAULT_VALUE;
 }

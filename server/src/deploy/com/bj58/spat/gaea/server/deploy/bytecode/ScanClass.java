@@ -74,7 +74,11 @@ public class ScanClass {
 	
 	
 	/**
-	 * 
+     * <pre>
+	 * 找到注解ServiceContract标注的Service接口，以及ServiceBehavior标注的Service实现类。
+     * 建立接口和实现类的对应关系
+     * 只初始化一次
+     * </pre>
 	 * @param path
 	 * @param classLoader
 	 * @return
@@ -132,14 +136,19 @@ public class ScanClass {
 	
 	
 	/**
+	 * <pre>
 	 * 扫描jar包，创建ContractInfo
+	 * 找到Service的接口和实现类
+	 * Service的接口是使用注解ServiceContract标注
+	 * Service的实现类是使用注解ServiceBehavior标注
+	 * </pre>
 	 * @param path
 	 * @param classLoader
 	 * @return
 	 * @throws Exception
 	 */
 	private static void scan(String path, DynamicClassLoader classLoader) throws Exception {
-		logger.info("begin scan jar from path:" + path);
+		logger.info("begin scan jar to find ServiceContract & ServiceBehavior from path:" + path);
 
 		List<String> jarPathList = FileHelper.getUniqueLibPath(path);
 
@@ -189,7 +198,7 @@ public class ScanClass {
 
 		contractInfo = createContractInfo(contractClassInfos, behaviorClassInfos);
 		
-		logger.info("finish scan jar");
+		logger.info("finish scan jar to find ServiceContract & ServiceBehavior");
 	}
 	
 	
@@ -224,7 +233,11 @@ public class ScanClass {
 	}
 	
 	/**
-	 * 
+	 * <pre>
+	 *     1.如果接口的注解ServiceContract的属性defaultAll为true，则将该接口包括所有父接口的方法都算作对外开放的RPC方法
+	 *     2.如果接口的注解ServiceContract的属性defaultAll为false，则找到该接口及所有父接口中包含OperationContract注解的方法
+	 *     3.不管是哪种情况，都是只允许public和protect两种方法对外开放。
+	 * </pre>
 	 * @param cls
 	 * @return
 	 */
@@ -289,7 +302,7 @@ public class ScanClass {
 		}
 		Method[] methods = cls.getDeclaredMethods();
 		List<ClassInfo.MethodInfo> methodInfos = new ArrayList<ClassInfo.MethodInfo>();
-		logger.info("ScanClass behavior class:"+cls.getSimpleName());
+		logger.info("ScanClass ServiceBehavior class:"+cls.getSimpleName());
 		for(Method m : methods) {
 			//only load public or protected method
 			if(Modifier.isPublic(m.getModifiers()) || Modifier.isProtected(m.getModifiers())) {
@@ -298,7 +311,11 @@ public class ScanClass {
 				
 				HttpRequestMapping requestMappingAnn = m.getAnnotation(HttpRequestMapping.class);
 				mi.setHttpRequestMapping(requestMappingAnn);
-				
+				//getParameterTypes()与getGenericParameterTypes()的区别是：
+				//如果方法的参数不是泛型，则两个获取的数据是一样的，否则是不一样的，
+				//与getGenericParameterTypes()方法会获取到泛型的具体类型，例如：
+				//public void setIds(List<Integer> ids)
+				//这个方法会打印出：java.util.List<java.lang.Integer>，而getParameterTypes()方法只会打印出java.util.List
 				Class<?>[] paramAry = m.getParameterTypes();
 				Type[] types = m.getGenericParameterTypes();
 				String[] paramNames = ClassHelper.getParamNames(cls, m);
@@ -337,11 +354,11 @@ public class ScanClass {
 				ClassInfo.ParamInfo[] paramInfoAry = new ClassInfo.ParamInfo[paramAry.length];
 				for(int i=0; i<paramAry.length; i++) {
 					paramInfoAry[i] = new ClassInfo.ParamInfo(i, 
-							paramAry[i], 
-							types[i],
-							paramNames[i], 
-							mapping[i], 
-							paramAnnAry[i]);
+							paramAry[i],     // Class
+							types[i],        // Type
+							paramNames[i],   // 参数名称
+							mapping[i],      // HttpRequestMapping注解
+							paramAnnAry[i]); // HttpPathParameter注解
 				}
 				mi.setParamInfoAry(paramInfoAry);
 				
@@ -354,7 +371,18 @@ public class ScanClass {
 	}
 	
 	/**
+	 * <pre>
 	 * create ContractInfo from contracts, behaviors
+	 * 建立接口和实现类之间的对应关系，对应关系如下：
+	 * --------------------------------------------
+	 * Interface1......ServiceImpl1
+	 *                 ServiceImpl2
+	 * --------------------------------------------
+	 * Interface2......ServiceImpl1
+	 *                 ServiceImpl3
+	 *                 ServiceImpl4
+	 * --------------------------------------------
+	 * </pre>
 	 * @param contracts
 	 * @param behaviors
 	 * @return
@@ -374,6 +402,7 @@ public class ScanClass {
 				Class<?>[] interfaceAry = b.getCls().getInterfaces();
 				for(Class<?> item : interfaceAry) {
 					if(item == c.getCls()) {
+						//TODO renjia 这里使用lookUP感觉会出现重复的情况
 						implMap.put(b.getLookUP(), b.getCls().getName());
 						break;
 					}
@@ -400,6 +429,7 @@ public class ScanClass {
 	
 	/**
 	 * get all interfaces
+	 * 递归查找所有的接口
 	 * @param cls
 	 * @param clsList
 	 */

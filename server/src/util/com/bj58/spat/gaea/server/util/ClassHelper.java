@@ -97,7 +97,36 @@ public class ClassHelper {
     }
     
     /**
+     * <pre>
      * get method parameter names
+     * 根据javassist反射类字节码中的LocalVariableTable获取到方法中的参数对应到源码中的参数名称。
+     * 但是要注意非静态方法和静态方法的区别，以下是非静态方法getNewsByID和静态方法getNewsByID1的字节码片段：
+     *   // access flags 0x1
+     *   public getNewsByID(I)Lentity/News; throws java/lang/Exception
+     *    L0
+     *     LINENUMBER 16 L0
+     *     INVOKESTATIC components/NewsService.getNews ()Lentity/News;
+     *     ARETURN
+     *    L1
+     *     LOCALVARIABLE this Lcomponents/NewsService; L0 L1 0
+     *     LOCALVARIABLE newsID I L0 L1 1
+     *     MAXSTACK = 1
+     *     MAXLOCALS = 2
+     *
+     *   // access flags 0x9
+     *   public static getNewsByID1(I)Lentity/News; throws java/lang/Exception
+     *    L0
+     *     LINENUMBER 20 L0
+     *     INVOKESTATIC components/NewsService.getNews ()Lentity/News;
+     *     ARETURN
+     *    L1
+     *     LOCALVARIABLE newsID I L0 L1 0
+     *     MAXSTACK = 1
+     *     MAXLOCALS = 1
+     *
+     *     从以上代码中可以看出来：非静态方法的LOCALVARIABLE表中的第一个参数是this；但是，
+     *     静态方法的LOCALVARIABLE表中的第一个参数却没有this，直接就是第一个参数开始。
+     * </pre>
      * @param cls
      * @param method
      * @return
@@ -121,7 +150,8 @@ public class ClassHelper {
     	if (attr == null)  {
     	    throw new Exception("class:"+cls.getName()+", have no LocalVariableTable, please use javac -g:{vars} to compile the source file");
     	}
-    	String[] paramNames = new String[cm.getParameterTypes().length];  
+    	String[] paramNames = new String[cm.getParameterTypes().length];
+    	//非静态方法，LocalVariableTable中的第一个参数是this
     	int pos = Modifier.isStatic(cm.getModifiers()) ? 0 : 1;  
     	for (int i = 0; i < paramNames.length; i++) {
     	    paramNames[i] = attr.variableName(i + pos);
