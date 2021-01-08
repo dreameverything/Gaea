@@ -81,20 +81,28 @@ public class ProxyClassCreater {
 					//判断是否冻结ctClass.isFrozen()，解冻方法ctClass.defrost()，解冻之后可以再次被修改。
 					CtClass ctProxyClass = pool.makeClass(proxyClassName, null);
 
+					ClassFile classFile = new ClassFile( proxyClassName );
+					classFile.appendSourceCode("public class ").append( proxyClassName );
+
 					//如果ClassPool.doPruning被设置成true，那么Javassist会在冻结一个对象的时候对这个对象进行精简，
 					//这是为了减少ClassPool的内存占用，精简的时候会丢弃class中不需要的属性。
-					ctProxyClass.stopPruning(true);
+					ctProxyClass.stopPruning(false);
 					//加载已经存在的接口com.bj58.spat.gaea.server.contract.context.IProxyStub
 					CtClass proxyStubInterface = pool.getCtClass(Constant.IPROXYSTUB_CLASS_NAME);
 					ctProxyClass.addInterface(proxyStubInterface);
-					
+
+					classFile.appendSourceCode( " implements " ).append( Constant.IPROXYSTUB_CLASS_NAME ).append("{");
+
+					String fieldStr = "private static " +
+										sessionBean.getInterfaceName() +
+										" serviceProxy = new " +
+										implClassName +
+										"();";
 					//创建代理类的成员
-					CtField proxyField = CtField.make("private static " +
-														sessionBean.getInterfaceName() +
-														" serviceProxy = new " +
-														implClassName +
-														"();", ctProxyClass);
+					CtField proxyField = CtField.make(fieldStr, ctProxyClass);
 					ctProxyClass.addField(proxyField);
+
+					classFile.appendSourceCode(fieldStr);
 
 					List<MethodInfo> methodList = interfaceClass.getMethodList();
 					Method[] methodAry = new Method[methodList.size()];
@@ -116,12 +124,28 @@ public class ProxyClassCreater {
 					}
 	
 					//创建代理类的方法
-                    //TODO renjia 这里用唯一的方法名称，那重载的方法就不支持了？
+                    //这里虽然用了唯一的方法名称，但是对于重载的方法也是支持的，在createMethods方法中，还会根据名称去找到对应的方法，
+					//也就是说，这里的去重之后，只是说要找到有哪些方法名需要被代理，并不是说出现方法名重复的时候，只能有一个方法
+					//被代理。但是代理的方法名称是同一个，方法体中会首先根据传入的参数的个数进行分支流转。
+					//假设重载的方法名称是doSomething(int a ) 和 doSomething(int a , String str)
+					//那么代理后的方法体变成（这里用伪代码的形式给出）：
+					//Object doSomething( context ){
+					//    params = context.getParams
+					//    if( params.len==1 ){
+					//        doSomething( params[0] )
+					//    }else if( params.len==2 ){
+					//        doSomething( params[0] , params[1] )
+					//    }
+					//}
+					//除了检查个数以外，还会对每个参数的类型进行检查。
 					for(Method m : uniqueMethodList) {
 						logger.debug("Create service method of ProxyClass:" + m.getName());
 						String methodStr = createMethods(proxyClassName, m.getName(), allMethodList, uniqueNameList);
 						logger.debug("Service method name of ProxyClass :"+m.getName()+" , source code:"+methodStr);
 						CtMethod methodItem = CtMethod.make(methodStr, ctProxyClass);
+
+						classFile.appendSourceCode(methodStr);
+
 						ctProxyClass.addMethod(methodItem);
 					}					
 					
@@ -130,8 +154,11 @@ public class ProxyClassCreater {
 					logger.debug("Create invoke method source code:" + invokeMethod);
 					CtMethod invoke = CtMethod.make(invokeMethod, ctProxyClass);
 					ctProxyClass.addMethod(invoke);
-	
-					clsList.add(new ClassFile(proxyClassName, ctProxyClass.toBytecode()));
+
+					classFile.appendSourceCode( invokeMethod ).append( "}" ); //Class source code end
+					classFile.setClsByte( ctProxyClass.toBytecode() );
+
+					clsList.add( classFile );
 				}
 			}
 		}

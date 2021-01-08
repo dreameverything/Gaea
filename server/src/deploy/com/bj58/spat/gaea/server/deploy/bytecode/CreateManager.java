@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bj58.spat.gaea.server.contract.context.Global;
 import com.bj58.spat.gaea.server.contract.context.IProxyFactory;
 import com.bj58.spat.gaea.server.contract.context.IProxyStub;
 import com.bj58.spat.gaea.server.contract.log.ILog;
@@ -63,21 +64,45 @@ public class CreateManager {
 		//time用于创建代理类时用于生成类的名称
 		long time = System.currentTimeMillis();
 		List<ClassFile> localProxyList = new ProxyClassCreater().createProxy(classLoader, serviceContract, time);
-		logger.info("Proxy Class buffer creater finish!!!");
+		logger.info("Proxy Class byte buffer finish");
 		ClassFile cfProxyFactory = new ProxyFactoryCreater().createProxy(classLoader, serviceContract, time);
-		logger.info("Proxy Factory buffer creater finish!!!");
-		
+		logger.info("Proxy Factory byte buffer finish");
+
+		//将java源文件输出到目录中
+		File outputFile = new File(Global.getSingleton().getServiceFolderPath() + File.separator + "proxy-src");
+		if (outputFile.exists()) {
+			for (File childFile : outputFile.listFiles()) {
+				if (childFile.exists()) {
+					childFile.delete();
+				}
+			}
+		}
+
+		outputClassSourceCodeToFile( localProxyList );
+		outputClassSourceCodeToFile( cfProxyFactory );
 		List<IProxyStub> localProxyAry = new ArrayList<IProxyStub>();
 		for(ClassFile cf : localProxyList) {
 			Class<?> cls = classLoader.findClass(cf.getClsName(), cf.getClsByte(), null);
-			logger.info("dynamic load class:" + cls.getName());
+			logger.info("Dynamic load Proxy Class:" + cls.getName());
 			localProxyAry.add((IProxyStub)cls.newInstance());
 		}
 		
 		Class<?> proxyFactoryCls = classLoader.findClass(cfProxyFactory.getClsName(), cfProxyFactory.getClsByte(), null);
+		logger.info("Dynamic load Proxy Factory Class:" + proxyFactoryCls.getName());
 		Constructor<?> constructor = proxyFactoryCls.getConstructor(List.class);
 		IProxyFactory pfInstance = (IProxyFactory)constructor.newInstance(localProxyAry);
-		logger.info("crate ProxyFactory instance!!!");
+		logger.info("Proxy Classes & Proxy Factory Class load finish!");
 		return pfInstance;
+	}
+
+	private void outputClassSourceCodeToFile( List<ClassFile> classFileList ){
+		for ( ClassFile classFile:
+			 classFileList) {
+			outputClassSourceCodeToFile( classFile );
+		}
+	}
+
+	private void outputClassSourceCodeToFile( ClassFile classFile ){
+		classFile.toFile( new File( Global.getSingleton().getServiceFolderPath() +File.separator+"proxy-src" ) );
 	}
 }

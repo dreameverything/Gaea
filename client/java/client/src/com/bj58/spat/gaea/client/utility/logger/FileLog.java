@@ -29,7 +29,7 @@ import com.bj58.spat.gaea.client.GaeaConst;
  */
 public class FileLog implements ILog {
 
-    public static org.apache.commons.logging.Log logger = null;
+    public org.apache.commons.logging.Log logger = null;
 
     public FileLog(Class<?> cls) {
         logger = org.apache.commons.logging.LogFactory.getLog(cls);

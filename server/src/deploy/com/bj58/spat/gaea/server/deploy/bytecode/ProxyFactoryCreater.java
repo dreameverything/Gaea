@@ -54,15 +54,22 @@ public class ProxyFactoryCreater {
 		}
 		
 		CtClass ctProxyClass = pool.makeClass(pfClsName, null);
+		ClassFile classFile = new ClassFile(pfClsName);
+
+		classFile.appendSourceCode( "public class " ).append( pfClsName );
 
 		CtClass proxyFactory = pool.getCtClass(Constant.IPROXYFACTORY_CLASS_NAME);
 		ctProxyClass.addInterface(proxyFactory);
-		
+
+		classFile.appendSourceCode( " implement " ).append( Constant.IPROXYFACTORY_CLASS_NAME ).append( "{" );
+
 		//createProxy
 		StringBuilder sbBody = new StringBuilder();
 		sbBody.append("public " + Constant.IPROXYSTUB_CLASS_NAME + " getProxy(String lookup) {");
+
 		StringBuilder sbConstructor = new StringBuilder();
 		sbConstructor.append("{");
+
 		int proxyCount = 0;
 		for (ContractInfo.SessionBean sessionBean : serviceContract.getSessionBeanList()) {
 			Iterator it = sessionBean.getInstanceMap().entrySet().iterator();
@@ -81,17 +88,16 @@ public class ProxyFactoryCreater {
 				sbConstructor.append(Global.getSingleton().getServiceConfig().getString("gaea.service.name"));
 				sbConstructor.append("=(");
 				sbConstructor.append(Constant.IPROXYSTUB_CLASS_NAME);
-				sbConstructor.append(")$1.get(");
+				sbConstructor.append(")$1.get("); //构造方法的第一个参数
 				sbConstructor.append(proxyCount);
 				sbConstructor.append(");");
-				
-				CtField proxyField = CtField.make(
-						"private "
-						 + Constant.IPROXYSTUB_CLASS_NAME+" proxy"
-						 + lookup + Global.getSingleton().getServiceConfig().getString("gaea.service.name")
-						 + " = null;",
-						ctProxyClass);
-				
+
+				StringBuilder fieldCode = new StringBuilder();
+				fieldCode.append( "private " ).append(Constant.IPROXYSTUB_CLASS_NAME).append(" proxy").append(lookup).append(Global.getSingleton().getServiceConfig().getString("gaea.service.name")).append( " = null;" );
+				CtField proxyField = CtField.make(fieldCode.toString(), ctProxyClass);
+
+				classFile.appendSourceCode( fieldCode.toString() );
+
 				ctProxyClass.addField(proxyField);
 				
 				proxyCount++;
@@ -102,15 +108,21 @@ public class ProxyFactoryCreater {
 
 		CtMethod methodItem = CtMethod.make(sbBody.toString(), ctProxyClass);
 		ctProxyClass.addMethod(methodItem);
-		
+
+
+
 	    CtConstructor cc = new CtConstructor(new CtClass[]{pool.get("java.util.List")}, ctProxyClass);
 	    cc.setBody(sbConstructor.toString());
 	    ctProxyClass.addConstructor(cc);
 
+		classFile.appendSourceCode( "public " ).append(pfClsName).append("(").append("java.util.List $1").append(")").append( sbConstructor );
+		classFile.appendSourceCode( sbBody.toString() );
+
+		classFile.setClsByte(ctProxyClass.toBytecode());
 		logger.debug("ProxyFactory source code:"+sbBody.toString());
 
 	    logger.info("create ProxyFactory success!!!");
 	    
-		return new ClassFile(pfClsName, ctProxyClass.toBytecode());
+		return classFile;
 	}
 }

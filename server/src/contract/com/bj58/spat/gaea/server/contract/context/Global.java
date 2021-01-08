@@ -55,7 +55,9 @@ public class Global {
 	private List<IInit> initList = new ArrayList<IInit>();
 	
 	private String rootPath;
-	
+
+	private String serviceFolderPath;
+
 	private ThreadLocal<GaeaContext> threadLocal = new ThreadLocal<GaeaContext>();
 	
 	private static final Object lockHelper = new Object();
@@ -150,7 +152,15 @@ public class Global {
 			serverList.add(server);
 		}
 	}
-	
+
+	public String getServiceFolderPath() {
+		return serviceFolderPath;
+	}
+
+	public void setServiceFolderPath(String serviceFolderPath) {
+		this.serviceFolderPath = serviceFolderPath;
+	}
+
 	public void addInit(IInit init) {
 		synchronized(initList) {
 			initList.add(init);

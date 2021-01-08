@@ -37,6 +37,7 @@ import com.bj58.spat.gaea.serializer.classes.GKeyValuePair;
 import com.bj58.spat.gaea.serializer.component.annotation.GaeaSerializable;
 import com.bj58.spat.gaea.serializer.component.exception.DisallowedSerializeException;
 import com.bj58.spat.gaea.serializer.component.helper.StrHelper;
+import org.apache.log4j.Logger;
 
 /**
  * <pre>
@@ -56,6 +57,7 @@ import com.bj58.spat.gaea.serializer.component.helper.StrHelper;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public final class TypeMap {
+    private static Logger logger = Logger.getLogger(TypeMap.class);
     /**
      * <pre>
      * 类型与ClassItem的对应关系
@@ -123,24 +125,24 @@ public final class TypeMap {
             Thread th = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    System.out.println("(异步)Scan jar files begin to find GaeaSerializable class!");
+                    logger.info("(异步)Scan jar files begin to find GaeaSerializable class!");
                     try {
                         LoadCustomType();
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                    System.out.println("(异步)Scan jar files completed!");
+                    logger.info("(异步)Scan jar files completed!");
                 }
             });
             th.start();
         } else {//在主线程中扫描类
-            System.out.println("(同步)Scan jar files begin to find GaeaSerializable class!");
+            logger.info("(同步)Scan jar files begin to find GaeaSerializable class!");
             try {
                 LoadCustomType();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            System.out.println("(同步)Scan jar files completed!");
+            logger.info("(同步)Scan jar files completed!");
         }
     }
 
@@ -165,7 +167,7 @@ public final class TypeMap {
         }
         Set<Class> classes = cs.scanGaeaSerializableClass(basePakage.split(";"));
         for (Class c : classes) {
-            System.out.println("Scaning " + c.getPackage().getName() + "." + c.getName());
+            logger.info( "[ " + Thread.currentThread().getName()+" ]"+"Scaning " + c.getPackage().getName() + "." + c.getName());
             try {
                 GaeaSerializable ann = (GaeaSerializable) c.getAnnotation(GaeaSerializable.class);
                 if (ann != null) {

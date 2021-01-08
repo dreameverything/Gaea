@@ -54,6 +54,7 @@ public class ProxyStandard implements InvocationHandler, Serializable, IProxySta
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        logger.info("method's name is :"+method.getName());
         long start = System.currentTimeMillis();
         Object obj = methodCaller.doMethodCall(args, method);
         long end = System.currentTimeMillis();

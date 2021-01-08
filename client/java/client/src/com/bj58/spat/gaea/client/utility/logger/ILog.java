@@ -20,6 +20,8 @@
  */
 package com.bj58.spat.gaea.client.utility.logger;
 
+import org.apache.commons.logging.Log;
+
 /**
  * ILog
  *

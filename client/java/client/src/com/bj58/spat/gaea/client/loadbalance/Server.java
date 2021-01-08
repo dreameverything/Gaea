@@ -162,8 +162,7 @@ public class Server {
     
     /**
      * 设置当前重启服务
-     * @param server
-     * @throws Throwable 
+     * @throws Throwable
      * @throws Exception 
      */
     public void createReboot() throws Exception, Throwable{

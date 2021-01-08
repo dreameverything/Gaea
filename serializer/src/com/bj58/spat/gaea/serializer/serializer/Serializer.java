@@ -25,6 +25,7 @@ import com.bj58.spat.gaea.serializer.component.GaeaOutStream;
 import com.bj58.spat.gaea.serializer.component.TypeMap;
 import com.bj58.spat.gaea.serializer.component.helper.ClassHelper;
 import com.bj58.spat.gaea.serializer.serializer.IGaeaSerializer;
+import org.apache.log4j.Logger;
 
 import java.nio.charset.Charset;
 
@@ -41,6 +42,7 @@ import java.nio.charset.Charset;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 public class Serializer {
+    private static Logger logger = Logger.getLogger(Serializer.class);
 
     static {
         TypeMap.InitTypeMap();
@@ -58,9 +60,9 @@ public class Serializer {
      */
     @Deprecated
     public static void SetJarPath(String... jarPath) {
-        System.err.println("------------------------------------注意!!!------------------------------------------------------");
-        System.err.println("注意!!!指定了JarPath重新扫描jar文件，强烈建议不使用指定JarPath方式扫描jar文件，请及时纠正，以免版本升级后带来系统错误！");
-        System.err.println("-----------------------------------------------------------------------------------------------------");
+        logger.info("------------------------------------注意!!!------------------------------------------------------");
+        logger.info("注意!!!指定了JarPath重新扫描jar文件，强烈建议不使用指定JarPath方式扫描jar文件，请及时纠正，以免版本升级后带来系统错误！");
+        logger.info("-----------------------------------------------------------------------------------------------------");
         JarPath = jarPath;
         TypeMap.InitTypeMap();
     }

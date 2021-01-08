@@ -79,8 +79,8 @@ public class CSocket {
         dataReceiver.RegSocketChannel(this);
         
         logger.info("MaxPakageSize:" + config.getMaxPakageSize());
-		logger.info("SendBufferSize:" + config.getSendBufferSize());
-		logger.info("RecvBufferSize:" + config.getRecvBufferSize());
+		logger.info("SendBufferSize111111111111:" + config.getSendBufferSize());
+		logger.info("RecvBufferSize1111111111111:" + config.getRecvBufferSize());
 		logger.info("create a new connection :" + this.toString());
 	}
 

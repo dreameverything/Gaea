@@ -101,7 +101,9 @@ public class Main extends DynamicClassLoader {
 		String gaeaConfigPath = serviceFolderPath + "/gaea_config.xml";
 		String log4jConfigDefaultPath = rootPath + "conf/gaea_log4j.xml";
 		String log4jConfigPath = serviceFolderPath + "/gaea_log4j.xml";
-		
+
+		Global.getSingleton().setServiceFolderPath( serviceFolderPath );
+
 		// load log4j
 		loadLog4jConfig(log4jConfigPath, log4jConfigDefaultPath);
 		logger = LogFactory.getLogger(Main.class);

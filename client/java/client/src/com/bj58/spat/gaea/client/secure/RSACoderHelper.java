@@ -346,7 +346,7 @@ public class RSACoderHelper {
 	        buff.append("</RSAKeyValue>");
 	        return buff.toString().replaceAll("[\t\n\r]", "");
 	    } catch (Exception e) {
-	        System.err.println(e);
+	        System.out.println(e);
 	        return null;
 	    }
 	}
@@ -408,7 +408,7 @@ public class RSACoderHelper {
 			buff.append("</RSAKeyValue>");
 			return buff.toString().replaceAll("[ \t\n\r]", "");
 		} catch (Exception e) {
-			System.err.println(e);
+			System.out.println(e);
 			return null;
 		}
 	}

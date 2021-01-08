@@ -41,6 +41,7 @@ import com.bj58.spat.gaea.serializer.component.helper.ClassHelper;
 import com.bj58.spat.gaea.serializer.component.helper.FileHelper;
 import com.bj58.spat.gaea.serializer.component.helper.StrHelper;
 import com.bj58.spat.gaea.serializer.serializer.Serializer;
+import org.apache.log4j.Logger;
 
 /**
  * ClassScaner
@@ -48,6 +49,7 @@ import com.bj58.spat.gaea.serializer.serializer.Serializer;
  * @author Service Platform Architecture Team (spat@58.com)
  */
 class ClassScaner {
+    private Logger logger = Logger.getLogger(ClassScaner.class);
     /**
      * 当前线程的ClassLoader是AppClassLoader
      */
@@ -73,14 +75,14 @@ class ClassScaner {
         }
         //如果JarPath设置了路径，这个方法已经被抛弃了
         else if (Serializer.JarPath != null && Serializer.JarPath.length > 0) {
-            System.err.println("指定JarPath路径扫描Jar包模式已经过时，请在启动vm参数中设置gaea.serializer.basepakage。");
+            logger.info("指定JarPath路径扫描Jar包模式已经过时，请在启动vm参数中设置gaea.serializer.basepakage。");
             for (String path : Serializer.JarPath) {
                 classes.addAll(scanByJarPath(path));
             }
         }
         //其他的扫描方式
         else {
-            System.err.println("开始扫描AppClassLoader引用的所有jar包、目录，找到包含GaeaSerializable的类文件到缓存中。如果扫描过程过长请在启动vm参数中设置gaea.serializer.basepakage或者设置gaea.serializer.scantype=asyn使用异步模式扫描。");
+            logger.info("开始扫描AppClassLoader引用的所有jar包、目录，找到包含GaeaSerializable的类文件到缓存中。如果扫描过程过长请在启动vm参数中设置gaea.serializer.basepakage或者设置gaea.serializer.scantype=asyn使用异步模式扫描。");
             classes.addAll(scanByURLClassLoader());
             if (classes.size() == 0) {
                 classes.addAll(scanByJarPath(ClassHelper.getJarPath(ClassScaner.class)));
@@ -129,11 +131,11 @@ class ClassScaner {
     }
 
     private Set<Class> scanByJarPath(String jarPath) throws IOException, ClassNotFoundException {
-    	System.out.println("jarPath:" + jarPath);
+    	logger.info("jarPath:" + jarPath);
         Set<Class> classes = new LinkedHashSet<Class>();
         List<File> jarFiles = FileHelper.getFiles(jarPath, "jar");
         if (jarFiles == null) {
-            System.err.println("No find jar from path:" + jarPath);
+            logger.info("No find jar from path:" + jarPath);
         } else {
 	        for (File f : jarFiles) {
 	            classes.addAll(ClassHelper.GetClassFromJar(f.getPath(), KEY_WORD));
@@ -154,7 +156,7 @@ class ClassScaner {
         URL[] urlAry = ((URLClassLoader) Thread.currentThread().getContextClassLoader()).getURLs();
         for (URL url : urlAry) {
         	if(!url.getPath().equalsIgnoreCase("/")) {
-	        	System.out.println("scanByURLClassLoader:" + URLDecoder.decode(url.getPath(), "utf-8"));
+	        	logger.info( "[ " + Thread.currentThread().getName()+" ]"+"scanByURLClassLoader:" + URLDecoder.decode(url.getPath(), "utf-8"));
 	            if (url.getPath().endsWith(".jar")) {
 	                classes.addAll(ClassHelper.GetClassFromJar(URLDecoder.decode(url.getPath(), "utf-8"), KEY_WORD));
 	            } else {
@@ -178,12 +180,12 @@ class ClassScaner {
      */
     private void getClassFromURL(URL url, String basePak, Set<Class> classes) throws MalformedURLException, URISyntaxException, FileNotFoundException, IOException, ClassNotFoundException {
         if(url == null) {
-        	System.err.println("url is null when getClassFromURL");
+        	logger.info("url is null when getClassFromURL");
         	return;
         }
         String path = URLDecoder.decode(url.getPath(), "utf-8");
         if(path == null || path.equalsIgnoreCase("")) {
-        	System.err.println("path is null when getClassFromURL (url:" + url + ")");
+        	logger.info("path is null when getClassFromURL (url:" + url + ")");
         	return;
         }
         
